@@ -38,7 +38,7 @@ export const getUserByUsername = async (req, res) => {
         res.status(500).json({ message: "Error fetch user", error: e.message });
     }
 
-}
+};
 
 export const updateProfile = async (req, res) => {
     try {
@@ -68,5 +68,36 @@ export const updateProfile = async (req, res) => {
     } catch (e) {
         console.error(`Failed to update user ${e.message}`);
         return res.status(500).json({ message: "Error updating user", error: e.message });
+    }
+};
+
+export const toggleFollow = async (req, res) => {
+    try {
+        const userToFollow = await User.findById(req.params.id);
+        const loggedInUser = await User.findById(req.user._id);
+
+        if (!userToFollow || !loggedInUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (userToFollow._id.toString() === loggedInUser._id.toString()) {
+            return res.status(400).json({ message: "You cannot follow yourself" });
+        }
+
+        const isFollowing = loggedInUser.following.includes(userToFollow._id);
+
+        if (isFollowing) {
+            await User.findByIdAndUpdate(loggedInUser._id, { $pull: { following: userToFollow._id } });
+            await User.findByIdAndUpdate(userToFollow._id, { $pull: { followers: loggedInUser._id } });
+        } else {
+            await User.findByIdAndUpdate(loggedInUser._id, { $push: { following: userToFollow._id } });
+            await User.findByIdAndUpdate(userToFollow._id, { $push: { followers: loggedInUser._id } });
+        }
+
+        return res.status(200).json({ message: isFollowing ? "Unfollowed successfully" : "Followed successfully" });
+
+    } catch (e) {
+        console.error(`Failed to toggle follow ${e.message}`);
+        return res.status(500).json({ message: "Error toggling follow", error: e.message });
     }
 }

@@ -1,10 +1,16 @@
 import express from "express";
 
-import { getLoggedInUser } from "../controllers/userController.js";
+import { body } from "express-validator";
+import { getLoggedInUser, getUserByUsername, updateProfile } from "../controllers/userController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
 router.get('/me', protect, getLoggedInUser);
+router.put('/profile', protect, [
+    body('bio').optional().trim().isLength({ max: 200 }).withMessage('Bio must be at most 200 characters long'),
+    body('profilePicture').optional().trim().isURL().withMessage('Profile picture must be a valid URL')
+], updateProfile);
+router.get('/:username', getUserByUsername);
 
 export default router;

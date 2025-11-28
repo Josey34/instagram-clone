@@ -4,6 +4,7 @@ import express from "express";
 import path from 'path';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.js';
+import userRoutes from './routes/user.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 connectDB().then(() => {
     app.listen(port, () => {

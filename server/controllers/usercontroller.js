@@ -101,3 +101,35 @@ export const toggleFollow = async (req, res) => {
         return res.status(500).json({ message: "Error toggling follow", error: e.message });
     }
 }
+
+export const getFollowers = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).populate('followers', '-password').select("followers");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json(user.followers);
+
+    } catch (e) {
+        console.error(`Failed to fetch followers ${e.message}`);
+        return res.status(500).json({ message: "Error fetching followers", error: e.message });
+    }
+}
+
+export const getFollowing = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).populate('following', '-password').select("following");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json(user.following);
+
+    } catch (e) {
+        console.error(`Failed to fetch following ${e.message}`);
+        return res.status(500).json({ message: "Error fetching following", error: e.message });
+    }
+}

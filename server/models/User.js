@@ -47,6 +47,20 @@ userSchema.pre('save', async function () {
     }
 });
 
+// Virtual field for followers count
+userSchema.virtual('followersCount').get(function() {
+    return this.followers.length;
+});
+
+// Virtual field for following count
+userSchema.virtual('followingCount').get(function() {
+    return this.following.length;
+});
+
+// Ensure virtuals are included when converting to JSON
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
+
 const User = mongoose.model('User', userSchema);
 
 export default User;

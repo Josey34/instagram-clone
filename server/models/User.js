@@ -1,11 +1,16 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
         unique: true,
-        required: true
+        required: true,
+        trim: true,
+        lowercase: true,
+        minlength: 3,
+        maxlength: 30,
+        match: /^[a-zA-Z0-9._]+$/
     },
     email: {
         type: String,
@@ -20,7 +25,7 @@ const userSchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        default: ""
+        default: "../assets/pictures/blank-profile-picture.png"
     },
     bio: {
         type: String,
@@ -36,11 +41,10 @@ const userSchema = new mongoose.Schema({
     }],
 }, { timestamps: true });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 10);
     }
-    next();
 });
 
 const User = mongoose.model('User', userSchema);

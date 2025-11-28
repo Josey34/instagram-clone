@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 
 export const getLoggedInUser = async (req, res) => {
@@ -71,6 +72,47 @@ export const updateProfile = async (req, res) => {
     }
 };
 
+export const deleteProfile = async (req, res) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ message: "Please provide password to confirm deletion" });
+        }
+
+        // Verify password
+        const user = await User.findById(req.user._id);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid password" });
+        }
+
+        await User.updateMany(
+            { following: req.user._id },
+            { $pull: { following: req.user._id } }
+        );
+
+        await User.updateMany(
+            { followers: req.user._id },
+            { $pull: { followers: req.user._id } }
+        );
+        
+        await User.findByIdAndDelete(req.user._id);
+
+        return res.status(200).json({ message: "User deleted successfully" });
+
+    } catch (e) {
+        console.error(`Failed to delete user ${e.message}`);
+        return res.status(500).json({ message: "Error deleting user", error: e.message });
+    }
+};
+
 export const toggleFollow = async (req, res) => {
     try {
         const userToFollow = await User.findById(req.params.id);
@@ -100,7 +142,7 @@ export const toggleFollow = async (req, res) => {
         console.error(`Failed to toggle follow ${e.message}`);
         return res.status(500).json({ message: "Error toggling follow", error: e.message });
     }
-}
+};
 
 export const getFollowers = async (req, res) => {
     try {
@@ -116,7 +158,7 @@ export const getFollowers = async (req, res) => {
         console.error(`Failed to fetch followers ${e.message}`);
         return res.status(500).json({ message: "Error fetching followers", error: e.message });
     }
-}
+};
 
 export const getFollowing = async (req, res) => {
     try {
@@ -132,4 +174,4 @@ export const getFollowing = async (req, res) => {
         console.error(`Failed to fetch following ${e.message}`);
         return res.status(500).json({ message: "Error fetching following", error: e.message });
     }
-}
+};

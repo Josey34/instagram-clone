@@ -49,12 +49,12 @@ userSchema.pre('save', async function () {
 
 // Virtual field for followers count
 userSchema.virtual('followersCount').get(function() {
-    return this.followers.length;
+    return this.followers?.length || 0;
 });
 
 // Virtual field for following count
 userSchema.virtual('followingCount').get(function() {
-    return this.following.length;
+    return this.following?.length || 0;
 });
 
 // Ensure virtuals are included when converting to JSON

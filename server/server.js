@@ -1,23 +1,23 @@
-import cors from 'cors';
 import dotenv from 'dotenv';
-import express from "express";
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+import cors from 'cors';
+import express from "express";
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.js';
+import postRoutes from './routes/post.js';
 import userRoutes from './routes/user.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
-const __dirname = path.resolve();
 
-dotenv.config();
 app.use(cors());
-
-//Simple middleware
-// app.use((req, res, next) => {
-//     console.log(`Request Method: ${req.method}, Request URL: ${req.url}`);
-//     next();
-// });
 
 app.use(express.json());
 
@@ -27,6 +27,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 
 connectDB().then(() => {
     app.listen(port, () => {

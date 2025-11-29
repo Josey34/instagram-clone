@@ -116,24 +116,24 @@ export const deleteProfile = async (req, res) => {
 export const toggleFollow = async (req, res) => {
     try {
         const userToFollow = await User.findById(req.params.id);
-        const loggedInUser = await User.findById(req.user._id);
+        const loggedUser = await User.findById(req.user._id);
 
-        if (!userToFollow || !loggedInUser) {
+        if (!userToFollow || !loggedUser) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (userToFollow._id.toString() === loggedInUser._id.toString()) {
+        if (userToFollow._id.toString() === loggedUser._id.toString()) {
             return res.status(400).json({ message: "You cannot follow yourself" });
         }
 
-        const isFollowing = loggedInUser.following.includes(userToFollow._id);
+        const isFollowing = loggedUser.following.includes(userToFollow._id);
 
         if (isFollowing) {
-            await User.findByIdAndUpdate(loggedInUser._id, { $pull: { following: userToFollow._id } });
-            await User.findByIdAndUpdate(userToFollow._id, { $pull: { followers: loggedInUser._id } });
+            await User.findByIdAndUpdate(loggedUser._id, { $pull: { following: userToFollow._id } });
+            await User.findByIdAndUpdate(userToFollow._id, { $pull: { followers: loggedUser._id } });
         } else {
-            await User.findByIdAndUpdate(loggedInUser._id, { $push: { following: userToFollow._id } });
-            await User.findByIdAndUpdate(userToFollow._id, { $push: { followers: loggedInUser._id } });
+            await User.findByIdAndUpdate(loggedUser._id, { $push: { following: userToFollow._id } });
+            await User.findByIdAndUpdate(userToFollow._id, { $push: { followers: loggedUser._id } });
         }
 
         return res.status(200).json({ message: isFollowing ? "Unfollowed successfully" : "Followed successfully" });

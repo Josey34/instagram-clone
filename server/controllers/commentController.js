@@ -33,15 +33,30 @@ export const createComment = async (req, res) => {
 
 export const getPostComments = async (req, res) => {
     try {
-        const postId = req.params.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
 
-        const comments = await Comment.find({ post: postId })
+        const comments = await Comment.find({ post: req.params.id })
+            .populate('user', 'username profilePicture')
             .sort({ createdAt: -1 })
-            .populate('user', 'username profilePicture');
+            .skip(skip)
+            .limit(limit);
 
-        return res.status(200).json({ comments });
+        const total = await Comment.countDocuments({ post: req.params.id });
+
+        return res.status(200).json({
+            comments,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
     } catch (e) {
-        return res.status(500).json({ message: 'Failed to fetch comments', error: e.message });
+        console.error(`Failed to fetch comments ${e.message}`);
+        return res.status(500).json({ message: "Error fetching comments", error: e.message });
     }
 };
 

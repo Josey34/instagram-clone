@@ -6,18 +6,25 @@ import { extractHashtags } from "../utils/extractHashtag.js";
 
 export const createPost = async (req, res) => {
     try {
-        const { image, caption } = req.body;
+        const { caption, image: imageUrl } = req.body;
         const loggedUser = req.user.id;
+
+        let imageURL;
+
+        if (req.file) {
+            const { uploadToCloudinary } = await import('./uploadController.js');
+            imageURL = await uploadToCloudinary(req.file.buffer, 'instagram-clone/posts');
+        } else if (imageUrl) {
+            imageURL = imageUrl;
+        } else {
+            return res.status(400).json({ message: 'Image is required (file upload or URL)' });
+        }
 
         const hashtag = caption ? extractHashtags(caption) : [];
 
-        if (!image) {
-            return res.status(400).json({ message: 'Image URL is required' });
-        }
-
         const post = await Post.create({
             user: loggedUser,
-            image,
+            image: imageURL,
             caption,
             hashtag
         });

@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -14,12 +16,17 @@ import authRoutes from './routes/auth.js';
 import commentRoutes from './routes/comment.js';
 import postRoutes from './routes/post.js';
 import storyRoute from './routes/story.js';
+import uploadRoutes from './routes/upload.js';
 import userRoutes from './routes/user.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
+
+app.use(helmet());
+
+app.use(morgan('dev'));
 
 app.use(express.json());
 
@@ -32,6 +39,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/stories', storyRoute);
+app.use('/api/upload', uploadRoutes);
 
 connectDB().then(() => {
     app.listen(port, () => {

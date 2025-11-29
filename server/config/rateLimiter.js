@@ -4,14 +4,25 @@ import { rateLimit } from 'express-rate-limit';
 export const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again later.'
-});
-
-// Stricter rate limiter for auth routes
-export const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 login/register attempts per 15 minutes
-    message: 'Too many authentication attempts, please try again after 15 minutes.',
+    message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Strict limiter for auth routes (login, register)
+export const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: 'Too many authentication attempts, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Limiter for create operations (posts, comments, stories)
+export const createLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 30, // Limit each IP to 30 create requests per hour
+    message: 'Too many create requests, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
 });

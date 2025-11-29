@@ -43,11 +43,22 @@ export const getUserByUsername = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { bio, profilePicture } = req.body;
+        const { bio, profilePicture: imageUrl } = req.body;
+
+        let imageURL;
 
         const updates = {};
         if (bio !== undefined) updates.bio = bio;
         if (profilePicture !== undefined) updates.profilePicture = profilePicture;
+
+        if (req.file) {
+            const { uploadToCloudinary } = await import('./uploadController.js');
+            imageURL = await uploadToCloudinary(req.file.buffer, 'instagram-clone/profilePicture');
+        } else if (imageUrl) {
+            imageURL = imageUrl;
+        } else {
+            return res.status(400).json({ message: 'Image is required (file upload or URL)' });
+        }
 
         // Check if there's anything to update
         if (Object.keys(updates).length === 0) {
@@ -82,11 +93,11 @@ export const deleteProfile = async (req, res) => {
 
         // Verify password
         const user = await User.findById(req.user._id);
-        
+
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        
+
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -102,7 +113,7 @@ export const deleteProfile = async (req, res) => {
             { followers: req.user._id },
             { $pull: { followers: req.user._id } }
         );
-        
+
         await User.findByIdAndDelete(req.user._id);
 
         return res.status(200).json({ message: "User deleted successfully" });

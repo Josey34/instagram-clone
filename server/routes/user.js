@@ -2,6 +2,8 @@ import express from "express";
 import { body } from "express-validator";
 import { deleteProfile, getFollowers, getFollowing, getLoggedInUser, getUserByUsername, searchUsers, toggleFollow, updateProfile } from "../controllers/userController.js";
 import { protect } from "../middleware/auth.js";
+import upload from "../middleware/upload.js";
+import { validate } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -9,10 +11,13 @@ const router = express.Router();
 // PROTECTED ROUTES (Require Authentication)
 // ============================================
 router.get('/me', protect, getLoggedInUser);
-router.put('/profile', protect, [
-    body('bio').optional().trim().isLength({ max: 200 }).withMessage('Bio must be at most 200 characters long'),
-    body('profilePicture').optional().trim().isURL().withMessage('Profile picture must be a valid URL')
-], updateProfile);
+
+router.put('/me', protect, upload.single('profilePicture'), [
+    body('username').optional().trim().isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
+    body('email').optional().isEmail().normalizeEmail().withMessage('Invalid email address'),
+    body('bio').optional().trim().isLength({ max: 150 }).withMessage('Bio must not exceed 150 characters')
+], validate, updateProfile);
+
 router.delete('/me', protect, deleteProfile);
 router.post('/:id/follow', protect, toggleFollow);
 

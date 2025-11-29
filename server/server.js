@@ -23,6 +23,9 @@ import userRoutes from './routes/user.js';
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Trust proxy - required for rate limiting behind reverse proxies (Railway, Render, etc.)
+app.set('trust proxy', 1);
+
 app.use(cors());
 
 app.use(helmet());

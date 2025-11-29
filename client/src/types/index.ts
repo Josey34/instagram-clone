@@ -68,3 +68,13 @@ export interface RegisterCredentials {
     email: string;
     password: string;
 }
+
+export interface Notification {
+    id: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+}
+
+export interface NotificationState {
+    notifications: Notification[];
+}

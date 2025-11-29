@@ -43,3 +43,5 @@ out/
 # Misc
 *.pem
 .vercel
+
+/server/insomnia-collection.json

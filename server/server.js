@@ -13,6 +13,7 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.js';
 import commentRoutes from './routes/comment.js';
 import postRoutes from './routes/post.js';
+import storyRoute from './routes/story.js';
 import userRoutes from './routes/user.js';
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/stories', storyRoute);
 
 connectDB().then(() => {
     app.listen(port, () => {

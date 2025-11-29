@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -20,6 +22,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
+
+app.use(helmet());
+
+app.use(morgan('dev'));
 
 app.use(express.json());
 

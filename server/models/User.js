@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
+    savedPosts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {
@@ -48,12 +52,12 @@ userSchema.pre('save', async function () {
 });
 
 // Virtual field for followers count
-userSchema.virtual('followersCount').get(function() {
+userSchema.virtual('followersCount').get(function () {
     return this.followers?.length || 0;
 });
 
 // Virtual field for following count
-userSchema.virtual('followingCount').get(function() {
+userSchema.virtual('followingCount').get(function () {
     return this.following?.length || 0;
 });
 

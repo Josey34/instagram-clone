@@ -6,20 +6,24 @@ import { protect } from "../middleware/auth.js";
 const router = express.Router();
 
 // ============================================
-// PUBLIC ROUTES (No Authentication Required)
-// ============================================
-router.get('/user/:id', getUserPosts);
-router.get('/:id/comments', getPostComments);
-router.get('/search/hashtag', searchPostsByHashtag);
-router.get('/:id', getPostById);
-
-// ============================================
 // PROTECTED ROUTES (Require Authentication)
 // ============================================
 router.get('/feed', protect, getFeed);
-router.post('/create', protect, createPost);
 router.get('/explore', protect, getExplorePosts);
 router.get('/saved', protect, getSavedPosts);
+router.post('/create', protect, createPost);
+
+// ============================================
+// PUBLIC ROUTES (No Authentication Required)
+// ============================================
+router.get('/user/:id', getUserPosts);
+router.get('/search/hashtag', searchPostsByHashtag);
+
+// ============================================
+// ROUTES WITH :id PARAMETER (Must be last)
+// ============================================
+router.get('/:id/comments', getPostComments);
+router.get('/:id', getPostById);
 router.post('/:id/comments', protect, createComment);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/save', protect, toggleSavePost);

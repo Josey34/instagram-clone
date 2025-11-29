@@ -20,6 +20,12 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
+    hashtag: [{
+        type: String,
+        default: [],
+        trim: true,
+        index: true
+    }]
 }, { timestamps: true });
 
 postSchema.virtual('likesCount').get(function() {

@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import { deleteProfile, getFollowers, getFollowing, getLoggedInUser, getUserByUsername, toggleFollow, updateProfile } from "../controllers/userController.js";
+import { deleteProfile, getFollowers, getFollowing, getLoggedInUser, getUserByUsername, searchUsers, toggleFollow, updateProfile } from "../controllers/userController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -21,6 +21,7 @@ router.post('/:id/follow', protect, toggleFollow);
 // ============================================
 router.get('/:id/followers', getFollowers);
 router.get('/:id/following', getFollowing);
+router.get('/search', searchUsers);
 router.get('/:username', getUserByUsername);
 
 export default router;

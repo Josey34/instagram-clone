@@ -175,3 +175,27 @@ export const getFollowing = async (req, res) => {
         return res.status(500).json({ message: "Error fetching following", error: e.message });
     }
 };
+
+export const searchUsers = async (req, res) => {
+    try {
+        const { query } = req.query;
+
+        if (!query) {
+            return res.status(400).json({ message: "Please provide a search query" });
+        }
+
+        const users = await User.find({
+            $or: [
+                { username: { $regex: query, $options: 'i' } },
+                { profilePicture: { $regex: query, $options: 'i' } },
+                { bio: { $regex: query, $options: 'i' } }
+            ]
+        }).select("-password").limit(20);
+
+        return res.status(200).json(users);
+
+    } catch (e) {
+        console.error(`Failed to search users ${e.message}`);
+        return res.status(500).json({ message: "Error searching users", error: e.message });
+    }
+};

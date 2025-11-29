@@ -1,5 +1,6 @@
 import Comment from "../models/Comment.js";
 import Post from "../models/Post.js";
+import User from "../models/User.js";
 
 export const createPost = async (req, res) => {
     try {
@@ -22,7 +23,7 @@ export const createPost = async (req, res) => {
     } catch (e) {
         return res.status(500).json({ message: 'Failed to create post', error: e.message });
     }
-}
+};
 
 export const getPostById = async (req, res) => {
     try {
@@ -37,7 +38,7 @@ export const getPostById = async (req, res) => {
     } catch (e) {
         return res.status(500).json({ message: 'Failed to fetch post', error: e.message });
     }
-}
+};
 
 export const getUserPosts = async (req, res) => {
     try {
@@ -49,7 +50,7 @@ export const getUserPosts = async (req, res) => {
     } catch (e) {
         return res.status(500).json({ message: 'Failed to fetch posts', error: e.message });
     }
-}
+};
 
 export const deletePost = async (req, res) => {
     try {
@@ -75,7 +76,7 @@ export const deletePost = async (req, res) => {
     } catch (e) {
         return res.status(500).json({ message: 'Failed to delete post', error: e.message });
     }
-}
+};
 
 export const toggleLike = async (req, res) => {
     try {
@@ -113,5 +114,28 @@ export const toggleLike = async (req, res) => {
 
     } catch (e) {
         return res.status(500).json({ message: 'Failed to toggle like', error: e.message });
+    }
+};
+
+export const getFeed = async (req, res) => {
+    try {
+        const loggedUserId = req.user.id;
+        
+        const user = await User.findById(loggedUserId);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        const posts = await Post.find({
+            user: { $in: [...user.following, loggedUserId] }
+        })
+        .sort({ createdAt: -1 })
+        .populate('user', 'username profilePicture')
+        .populate('commentsCount');
+        
+        return res.status(200).json(posts);
+    } catch (e) {
+        return res.status(500).json({ message: 'Failed to fetch feed', error: e.message });
     }
 };

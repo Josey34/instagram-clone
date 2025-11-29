@@ -68,6 +68,14 @@ userSchema.virtual('followingCount').get(function () {
     return this.following?.length || 0;
 });
 
+// Virtual field for posts count
+userSchema.virtual('postsCount', {
+    ref: 'Post',
+    localField: '_id',
+    foreignField: 'user',
+    count: true
+});
+
 // Ensure virtuals are included when converting to JSON
 userSchema.set('toJSON', { virtuals: true });
 userSchema.set('toObject', { virtuals: true });

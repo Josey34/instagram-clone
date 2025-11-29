@@ -3,16 +3,26 @@ import User from "../models/User.js";
 
 export const createStory = async (req, res) => {
     try {
-        const { image } = req.body;
+        const { image: imageUrl } = req.body;
         const loggedUser = req.user.id;
 
-        if (!image) {
-            return res.status(400).json({ message: 'Image URL is required' });
+        let imageURL;
+
+        // Check if file was uploaded
+        if (req.file) {
+            // Upload file to Cloudinary
+            const { uploadToCloudinary } = await import('./uploadController.js');
+            imageURL = await uploadToCloudinary(req.file.buffer, 'instagram-clone/stories');
+        } else if (imageUrl) {
+            // Use provided URL
+            imageURL = imageUrl;
+        } else {
+            return res.status(400).json({ message: 'Image is required (file upload or URL)' });
         }
 
         const story = await Story.create({
             user: loggedUser,
-            image
+            image: imageURL
         });
 
         await story.populate('user', 'username profilePicture');

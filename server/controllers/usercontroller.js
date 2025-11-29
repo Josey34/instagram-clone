@@ -43,21 +43,17 @@ export const getUserByUsername = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { bio, profilePicture: imageUrl } = req.body;
-
-        let imageURL;
+        const { bio, profilePicture: profilePictureUrl } = req.body;
 
         const updates = {};
         if (bio !== undefined) updates.bio = bio;
-        if (profilePicture !== undefined) updates.profilePicture = profilePicture;
 
+        // Handle profile picture upload
         if (req.file) {
             const { uploadToCloudinary } = await import('./uploadController.js');
-            imageURL = await uploadToCloudinary(req.file.buffer, 'instagram-clone/profilePicture');
-        } else if (imageUrl) {
-            imageURL = imageUrl;
-        } else {
-            return res.status(400).json({ message: 'Image is required (file upload or URL)' });
+            updates.profilePicture = await uploadToCloudinary(req.file.buffer, 'instagram-clone/profile');
+        } else if (profilePictureUrl !== undefined) {
+            updates.profilePicture = profilePictureUrl;
         }
 
         // Check if there's anything to update

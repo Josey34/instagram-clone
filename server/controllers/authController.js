@@ -1,8 +1,11 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import { AppError, asyncHandler } from "../middleware/errorHandler.js";
 import User from "../models/User.js";
+import { passwordResetEmail } from "../utils/emailTemplates.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password, fullname } = req.body;
@@ -83,5 +86,88 @@ export const loginUser = asyncHandler(async (req, res) => {
         message: "User logged in successfully",
         token,
         user
+    });
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    // Validate email input
+    if (!email) {
+        throw new AppError("Email is required", 400);
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    // Don't reveal if email exists for security
+    // Always return success message
+    if (!user) {
+        return res.status(200).json({
+            message: "If that email exists, a password reset link has been sent"
+        });
+    }
+
+    // Generate reset token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    try {
+        // Send email
+        await sendEmail({
+            to: user.email,
+            subject: "Password Reset Request",
+            html: passwordResetEmail(resetUrl, user.username)
+        });
+
+        res.status(200).json({
+            message: "If that email exists, a password reset link has been sent"
+        });
+    } catch (error) {
+        // If email fails, clear reset token
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        await user.save({ validateBeforeSave: false });
+
+        throw new AppError("Error sending email. Please try again later.", 500);
+    }
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+    const { password } = req.body;
+    const { token } = req.params;
+
+    // Validate password input
+    if (!password) {
+        throw new AppError("Password is required", 400);
+    }
+
+    // Hash token to compare with database
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+
+    // Find user with matching token and check expiration
+    const user = await User.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new AppError("Invalid or expired reset token", 400);
+    }
+
+    // Update password (pre-save hook will hash it)
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.status(200).json({
+        message: "Password reset successful"
     });
 });

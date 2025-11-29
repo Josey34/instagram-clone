@@ -12,6 +12,13 @@ const userSchema = new mongoose.Schema({
         maxlength: 30,
         match: /^[a-zA-Z0-9._]+$/
     },
+    fullname: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1,
+        maxlength: 50
+    },
     email: {
         type: String,
         unique: true,
@@ -59,6 +66,14 @@ userSchema.virtual('followersCount').get(function () {
 // Virtual field for following count
 userSchema.virtual('followingCount').get(function () {
     return this.following?.length || 0;
+});
+
+// Virtual field for posts count
+userSchema.virtual('postsCount', {
+    ref: 'Post',
+    localField: '_id',
+    foreignField: 'user',
+    count: true
 });
 
 // Ensure virtuals are included when converting to JSON

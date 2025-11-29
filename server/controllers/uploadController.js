@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { AppError, asyncHandler } from '../middleware/errorHandler.js';
 
 let isConfigured = false;
 
@@ -42,51 +43,33 @@ export const uploadToCloudinary = (fileBuffer, folder) => {
 };
 
 // Upload single image
-export const uploadImage = async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
-        }
-
-        // Determine folder based on upload type
-        const folder = req.query.type || 'general';
-
-        const imageUrl = await uploadToCloudinary(req.file.buffer, `instagram-clone/${folder}`);
-
-        return res.status(200).json({
-            message: 'Image uploaded successfully',
-            url: imageUrl
-        });
-
-    } catch (error) {
-        console.error('Upload error:', error);
-        return res.status(500).json({
-            message: 'Failed to upload image',
-            error: error.message
-        });
+export const uploadImage = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        throw new AppError('No file uploaded', 400);
     }
-};
+
+    // Determine folder based on upload type
+    const folder = req.query.type || 'general';
+
+    const imageUrl = await uploadToCloudinary(req.file.buffer, `instagram-clone/${folder}`);
+
+    return res.status(200).json({
+        message: 'Image uploaded successfully',
+        url: imageUrl
+    });
+});
 
 // Delete image from Cloudinary
-export const deleteImage = async (req, res) => {
-    try {
-        ensureCloudinaryConfigured();
+export const deleteImage = asyncHandler(async (req, res) => {
+    ensureCloudinaryConfigured();
 
-        const { publicId } = req.body;
+    const { publicId } = req.body;
 
-        if (!publicId) {
-            return res.status(400).json({ message: 'Public ID is required' });
-        }
-
-        await cloudinary.uploader.destroy(publicId);
-
-        return res.status(200).json({ message: 'Image deleted successfully' });
-
-    } catch (error) {
-        console.error('Delete error:', error);
-        return res.status(500).json({
-            message: 'Failed to delete image',
-            error: error.message
-        });
+    if (!publicId) {
+        throw new AppError('Public ID is required', 400);
     }
-};
+
+    await cloudinary.uploader.destroy(publicId);
+
+    return res.status(200).json({ message: 'Image deleted successfully' });
+});

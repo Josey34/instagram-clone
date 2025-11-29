@@ -8,8 +8,9 @@ const router = express.Router();
 
 router.post('/register', authLimiter, [
     body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+    body('fullname').trim().isLength({ min: 1, max: 50}),
+    body('email').isEmail().normalizeEmail().withMessage('Invalid email address'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-    body('email').isEmail().normalizeEmail().withMessage('Invalid email address')
 ], validate, registerUser);
 
 router.post('/login', authLimiter, [

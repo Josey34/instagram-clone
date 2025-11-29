@@ -6,7 +6,7 @@ import User from "../models/User.js";
 
 export const registerUser = async (req, res, next) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, fullname } = req.body;
         
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -30,6 +30,7 @@ export const registerUser = async (req, res, next) => {
             username,
             email,
             password,
+            fullname
         });
         
         const savedUser = await user.save();

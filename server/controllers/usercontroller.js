@@ -43,10 +43,11 @@ export const getUserByUsername = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { bio, profilePicture: profilePictureUrl } = req.body;
+        const { bio, profilePicture: profilePictureUrl, fullname } = req.body;
 
         const updates = {};
         if (bio !== undefined) updates.bio = bio;
+        if (fullName !== undefined) updates.fullName = fullName;
 
         // Handle profile picture upload
         if (req.file) {
@@ -194,7 +195,7 @@ export const searchUsers = async (req, res) => {
         const users = await User.find({
             $or: [
                 { username: { $regex: query, $options: 'i' } },
-                { profilePicture: { $regex: query, $options: 'i' } },
+                { fullname: { $regex: query, $options: 'i' } },
                 { bio: { $regex: query, $options: 'i' } }
             ]
         }).select("-password").limit(20);

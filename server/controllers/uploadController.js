@@ -1,7 +1,23 @@
-import cloudinary from '../config/cloudinary.js';
+import { v2 as cloudinary } from 'cloudinary';
+
+let isConfigured = false;
+
+// Lazy configure Cloudinary (only when first used)
+const ensureCloudinaryConfigured = () => {
+    if (!isConfigured) {
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+        });
+        isConfigured = true;
+    }
+};
 
 // Helper function to upload image buffer to Cloudinary
 export const uploadToCloudinary = (fileBuffer, folder) => {
+    ensureCloudinaryConfigured();
+
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
             {
@@ -54,6 +70,8 @@ export const uploadImage = async (req, res) => {
 // Delete image from Cloudinary
 export const deleteImage = async (req, res) => {
     try {
+        ensureCloudinaryConfigured();
+
         const { publicId } = req.body;
 
         if (!publicId) {

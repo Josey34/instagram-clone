@@ -12,6 +12,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 import cors from 'cors';
 import express from "express";
 import { connectDB } from './config/db.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import commentRoutes from './routes/comment.js';
 import postRoutes from './routes/post.js';
@@ -40,6 +41,8 @@ app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/stories', storyRoute);
 app.use('/api/upload', uploadRoutes);
+
+app.use(errorHandler);
 
 connectDB().then(() => {
     app.listen(port, () => {

@@ -1,209 +1,161 @@
 import bcrypt from "bcryptjs";
+import { AppError, asyncHandler } from "../middleware/errorHandler.js";
 import User from "../models/User.js";
 
-export const getLoggedInUser = async (req, res) => {
-    try {
-        let loggedUser = await User.findById(req.user._id).select("-password")
+export const getLoggedInUser = asyncHandler(async (req, res) => {
+    let loggedUser = await User.findById(req.user._id).select("-password")
 
-        req.user = loggedUser;
+    req.user = loggedUser;
 
-        if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-
-        return res.status(200).json(req.user);
-    } catch (e) {
-        console.error(`Failed to fetch user ${e.message}`);
-        res.status(500).json({ message: "Error fetch user", error: e.message });
-    }
-};
-
-export const getUserByUsername = async (req, res) => {
-
-    try {
-        const username = req.params.username;
-
-        if (!username) {
-            return res.status(400).json({ message: "Please provide a username" });
-        }
-
-        const fetchedUser = await User.findOne({ username }).select("-password")
-        if (!fetchedUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        return res.status(200).json(fetchedUser);
-
-    } catch (e) {
-        console.error(`Failed to fetch user ${e.message}`);
-        res.status(500).json({ message: "Error fetch user", error: e.message });
+    if (!req.user) {
+        throw new AppError("Unauthorized", 401);
     }
 
-};
+    return res.status(200).json(req.user);
+});
 
-export const updateProfile = async (req, res) => {
-    try {
-        const { bio, profilePicture: profilePictureUrl, fullname } = req.body;
+export const getUserByUsername = asyncHandler(async (req, res) => {
+    const username = req.params.username;
 
-        const updates = {};
-        if (bio !== undefined) updates.bio = bio;
-        if (fullName !== undefined) updates.fullName = fullName;
-
-        // Handle profile picture upload
-        if (req.file) {
-            const { uploadToCloudinary } = await import('./uploadController.js');
-            updates.profilePicture = await uploadToCloudinary(req.file.buffer, 'instagram-clone/profile');
-        } else if (profilePictureUrl !== undefined) {
-            updates.profilePicture = profilePictureUrl;
-        }
-
-        // Check if there's anything to update
-        if (Object.keys(updates).length === 0) {
-            return res.status(400).json({ message: "No fields to update" });
-        }
-
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            updates,
-            { new: true }
-        ).select("-password");
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        return res.status(200).json(updatedUser);
-
-    } catch (e) {
-        console.error(`Failed to update user ${e.message}`);
-        return res.status(500).json({ message: "Error updating user", error: e.message });
+    if (!username) {
+        throw new AppError("Please provide a username", 400);
     }
-};
 
-export const deleteProfile = async (req, res) => {
-    try {
-        const { password } = req.body;
-
-        if (!password) {
-            return res.status(400).json({ message: "Please provide password to confirm deletion" });
-        }
-
-        // Verify password
-        const user = await User.findById(req.user._id);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(401).json({ message: "Invalid password" });
-        }
-
-        await User.updateMany(
-            { following: req.user._id },
-            { $pull: { following: req.user._id } }
-        );
-
-        await User.updateMany(
-            { followers: req.user._id },
-            { $pull: { followers: req.user._id } }
-        );
-
-        await User.findByIdAndDelete(req.user._id);
-
-        return res.status(200).json({ message: "User deleted successfully" });
-
-    } catch (e) {
-        console.error(`Failed to delete user ${e.message}`);
-        return res.status(500).json({ message: "Error deleting user", error: e.message });
+    const fetchedUser = await User.findOne({ username }).select("-password")
+    if (!fetchedUser) {
+        throw new AppError("User not found", 404);
     }
-};
 
-export const toggleFollow = async (req, res) => {
-    try {
-        const userToFollow = await User.findById(req.params.id);
-        const loggedUser = await User.findById(req.user._id);
+    return res.status(200).json(fetchedUser);
+});
 
-        if (!userToFollow || !loggedUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
+export const updateProfile = asyncHandler(async (req, res) => {
+    const { bio, profilePicture: profilePictureUrl, fullname } = req.body;
 
-        if (userToFollow._id.toString() === loggedUser._id.toString()) {
-            return res.status(400).json({ message: "You cannot follow yourself" });
-        }
+    const updates = {};
+    if (bio !== undefined) updates.bio = bio;
+    if (fullname !== undefined) updates.fullName = fullname;
 
-        const isFollowing = loggedUser.following.includes(userToFollow._id);
-
-        if (isFollowing) {
-            await User.findByIdAndUpdate(loggedUser._id, { $pull: { following: userToFollow._id } });
-            await User.findByIdAndUpdate(userToFollow._id, { $pull: { followers: loggedUser._id } });
-        } else {
-            await User.findByIdAndUpdate(loggedUser._id, { $push: { following: userToFollow._id } });
-            await User.findByIdAndUpdate(userToFollow._id, { $push: { followers: loggedUser._id } });
-        }
-
-        return res.status(200).json({ message: isFollowing ? "Unfollowed successfully" : "Followed successfully" });
-
-    } catch (e) {
-        console.error(`Failed to toggle follow ${e.message}`);
-        return res.status(500).json({ message: "Error toggling follow", error: e.message });
+    // Handle profile picture upload
+    if (req.file) {
+        const { uploadToCloudinary } = await import('./uploadController.js');
+        updates.profilePicture = await uploadToCloudinary(req.file.buffer, 'instagram-clone/profile');
+    } else if (profilePictureUrl !== undefined) {
+        updates.profilePicture = profilePictureUrl;
     }
-};
 
-export const getFollowers = async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id).populate('followers', '-password').select("followers");
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        return res.status(200).json(user.followers);
-
-    } catch (e) {
-        console.error(`Failed to fetch followers ${e.message}`);
-        return res.status(500).json({ message: "Error fetching followers", error: e.message });
+    // Check if there's anything to update
+    if (Object.keys(updates).length === 0) {
+        throw new AppError("No fields to update", 400);
     }
-};
 
-export const getFollowing = async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id).populate('following', '-password').select("following");
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        updates,
+        { new: true }
+    ).select("-password");
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        return res.status(200).json(user.following);
-
-    } catch (e) {
-        console.error(`Failed to fetch following ${e.message}`);
-        return res.status(500).json({ message: "Error fetching following", error: e.message });
+    if (!updatedUser) {
+        throw new AppError("User not found", 404);
     }
-};
 
-export const searchUsers = async (req, res) => {
-    try {
-        const { query } = req.query;
+    return res.status(200).json(updatedUser);
+});
 
-        if (!query) {
-            return res.status(400).json({ message: "Please provide a search query" });
-        }
+export const deleteProfile = asyncHandler(async (req, res) => {
+    const { password } = req.body;
 
-        const users = await User.find({
-            $or: [
-                { username: { $regex: query, $options: 'i' } },
-                { fullname: { $regex: query, $options: 'i' } },
-                { bio: { $regex: query, $options: 'i' } }
-            ]
-        }).select("-password").limit(20);
-
-        return res.status(200).json(users);
-
-    } catch (e) {
-        console.error(`Failed to search users ${e.message}`);
-        return res.status(500).json({ message: "Error searching users", error: e.message });
+    if (!password) {
+        throw new AppError("Please provide password to confirm deletion", 400);
     }
-};
+
+    // Verify password
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+        throw new AppError("Invalid password", 401);
+    }
+
+    await User.updateMany(
+        { following: req.user._id },
+        { $pull: { following: req.user._id } }
+    );
+
+    await User.updateMany(
+        { followers: req.user._id },
+        { $pull: { followers: req.user._id } }
+    );
+
+    await User.findByIdAndDelete(req.user._id);
+
+    return res.status(200).json({ message: "User deleted successfully" });
+});
+
+export const toggleFollow = asyncHandler(async (req, res) => {
+    const userToFollow = await User.findById(req.params.id);
+    const loggedUser = await User.findById(req.user._id);
+
+    if (!userToFollow || !loggedUser) {
+        throw new AppError("User not found", 404);
+    }
+
+    if (userToFollow._id.toString() === loggedUser._id.toString()) {
+        throw new AppError("You cannot follow yourself", 400);
+    }
+
+    const isFollowing = loggedUser.following.includes(userToFollow._id);
+
+    if (isFollowing) {
+        await User.findByIdAndUpdate(loggedUser._id, { $pull: { following: userToFollow._id } });
+        await User.findByIdAndUpdate(userToFollow._id, { $pull: { followers: loggedUser._id } });
+    } else {
+        await User.findByIdAndUpdate(loggedUser._id, { $push: { following: userToFollow._id } });
+        await User.findByIdAndUpdate(userToFollow._id, { $push: { followers: loggedUser._id } });
+    }
+
+    return res.status(200).json({ message: isFollowing ? "Unfollowed successfully" : "Followed successfully" });
+});
+
+export const getFollowers = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id).populate('followers', '-password').select("followers");
+
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    return res.status(200).json(user.followers);
+});
+
+export const getFollowing = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id).populate('following', '-password').select("following");
+
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    return res.status(200).json(user.following);
+});
+
+export const searchUsers = asyncHandler(async (req, res) => {
+    const { query } = req.query;
+
+    if (!query) {
+        throw new AppError("Please provide a search query", 400);
+    }
+
+    const users = await User.find({
+        $or: [
+            { username: { $regex: query, $options: 'i' } },
+            { fullname: { $regex: query, $options: 'i' } },
+            { bio: { $regex: query, $options: 'i' } }
+        ]
+    }).select("-password").limit(20);
+
+    return res.status(200).json(users);
+});

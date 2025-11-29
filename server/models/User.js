@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
@@ -50,6 +51,14 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
     }],
+    resetPasswordToken: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null
+    }
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {
@@ -79,6 +88,23 @@ userSchema.virtual('postsCount', {
 // Ensure virtuals are included when converting to JSON
 userSchema.set('toJSON', { virtuals: true });
 userSchema.set('toObject', { virtuals: true });
+
+// Instance method to create password reset token
+userSchema.methods.createPasswordResetToken = function() {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash token and save to database
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Set expiration to 1 hour from now
+    this.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
+
+    // Return plain token to send via email
+    return resetToken;
+};
 
 const User = mongoose.model('User', userSchema);
 

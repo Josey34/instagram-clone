@@ -13,10 +13,22 @@ export interface User {
     postsCount: number;
 }
 
+export interface UserState {
+    profileUser: User | null;
+    loading: boolean;
+    error: string | null;
+}
+
 export interface UserPreview {
     _id: string;
     username: string;
     profilePicture: string;
+}
+
+export interface PostState {
+    posts: Post[];
+    loading: boolean;
+    error: string | null;
 }
 
 export interface Post {

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import api from "../../api/axios";
 import type { PostState } from "../../types";
+import { addComment, deleteComment } from "./commentSlice";
 
 const initialState: PostState = {
     posts: [],
@@ -108,6 +109,29 @@ const postSlice = createSlice({
                     action.payload.data.post,
                     ...state.posts.slice(postIndex + 1),
                 ];
+            }
+        });
+
+        // ADD COMMENT - increment commentsCount
+        builder.addCase(addComment.fulfilled, (state, action) => {
+            const postIndex = state.posts.findIndex(
+                (p) => p._id === action.payload.postId
+            );
+            if (postIndex !== -1) {
+                state.posts[postIndex].commentsCount += 1;
+            }
+        });
+
+        // DELETE COMMENT - decrement commentsCount
+        builder.addCase(deleteComment.fulfilled, (state, action) => {
+            const postIndex = state.posts.findIndex(
+                (p) => p._id === action.payload.postId
+            );
+            if (postIndex !== -1) {
+                state.posts[postIndex].commentsCount = Math.max(
+                    0,
+                    state.posts[postIndex].commentsCount - 1
+                );
             }
         });
     },

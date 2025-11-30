@@ -239,7 +239,11 @@ const PostCard = ({ post }: PostCardProps) => {
                             </button>
                         </div>
 
-                        <CommentList comments={postComments} loading={commentsLoading} />
+                        <CommentList
+                            comments={postComments}
+                            loading={commentsLoading}
+                            postOwnerId={post.user._id}
+                        />
 
                         <CommentInput postId={post._id} />
                     </div>

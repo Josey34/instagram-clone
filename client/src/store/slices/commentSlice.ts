@@ -47,6 +47,22 @@ export const addComment = createAsyncThunk(
     }
 );
 
+export const deleteComment = createAsyncThunk(
+    "comment/deleteComment",
+    async ({ commentId, postId }: { commentId: string; postId: string }, { rejectWithValue }) => {
+        try {
+            await api.delete(`/comments/${commentId}`);
+            return { commentId, postId };
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data.message
+                    : "Failed to delete comment"
+            );
+        }
+    }
+);
+
 const commentSlice = createSlice({
     name: "comment",
     initialState,
@@ -90,6 +106,16 @@ const commentSlice = createSlice({
         builder.addCase(addComment.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
+        });
+
+        // DELETE COMMENT
+        builder.addCase(deleteComment.fulfilled, (state, action) => {
+            const { commentId, postId } = action.payload;
+            if (state.comments[postId]) {
+                state.comments[postId] = state.comments[postId].filter(
+                    (comment) => comment._id !== commentId
+                );
+            }
         });
     },
 });

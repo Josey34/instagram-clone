@@ -1,72 +1,39 @@
 import { useEffect } from "react";
 import Layout from "../components/Layout";
-import Loading from "../components/Loading";
+import PostCard from "../components/PostCard";
+import FeedSkeleton from "../components/skeletons/FeedSkeleton";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { getCurrentUser } from "../store/slices/authSlice";
+import { getFeed } from "../store/slices/postSlice";
 
 const Home = () => {
     const dispatch = useAppDispatch();
-    const { user, loading } = useAppSelector((state) => state.auth);
+    const { posts, loading } = useAppSelector((state) => state.post);
 
     useEffect(() => {
-        // Fetch current user data if not already loaded
-        if (!user) {
-            dispatch(getCurrentUser());
-        }
-    }, [dispatch, user]);
-
-    if (loading) {
-        return (
-            <Layout>
-                <Loading />
-            </Layout>
-        );
-    }
+        dispatch(getFeed());
+    }, [dispatch]);
 
     return (
         <Layout>
-            <div className="space-y-6">
-                <h1 className="text-3xl font-bold">
-                    Welcome to Instagram Clone
-                </h1>
+            <div className="max-w-2xl mx-auto">
+                <h1 className="text-3xl font-bold mb-6">Feed</h1>
 
-                {user && (
+                {loading ? (
+                    <FeedSkeleton count={3} />
+                ) : posts.length === 0 ? (
                     <div className="card bg-base-100 shadow-xl">
-                        <div className="card-body">
-                            <h2 className="card-title">
-                                Hello, {user.fullname}!
-                            </h2>
-                            <p className="text-base-content/70">@{user.username}</p>
-                            <p className="text-base-content/70">{user.email}</p>
-
-                            <div className="stats stats-horizontal shadow mt-4">
-                                <div className="stat">
-                                    <div className="stat-title">Posts</div>
-                                    <div className="stat-value text-primary">{user.postsCount}</div>
-                                </div>
-
-                                <div className="stat">
-                                    <div className="stat-title">Followers</div>
-                                    <div className="stat-value text-secondary">{user.followersCount}</div>
-                                </div>
-
-                                <div className="stat">
-                                    <div className="stat-title">Following</div>
-                                    <div className="stat-value text-accent">{user.followingCount}</div>
-                                </div>
-                            </div>
+                        <div className="card-body text-center py-12">
+                            <p className="text-base-content/70 text-lg mb-4">
+                                No posts in your feed yet
+                            </p>
+                            <p className="text-base-content/60">
+                                Follow some users to see their posts here!
+                            </p>
                         </div>
                     </div>
+                ) : (
+                    posts.map((post) => <PostCard key={post._id} post={post} />)
                 )}
-
-                <div className="card bg-base-100 shadow-xl">
-                    <div className="card-body">
-                        <h3 className="card-title">Feed</h3>
-                        <p className="text-base-content/70">
-                            No posts yet. Start following people to see their posts!
-                        </p>
-                    </div>
-                </div>
             </div>
         </Layout>
     );

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
-import PostGridSkeleton from "../../components/PostGridSkeleton";
-import UserInfoSkeleton from "../../components/UserInfoSkeleton";
+import PostGridSkeleton from "../../components/skeletons/PostGridSkeleton";
+import UserInfoSkeleton from "../../components/skeletons/UserInfoSkeleton";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
 import { addNotification } from "../../store/slices/notificationSlice";
 import { getUserPosts } from "../../store/slices/postSlice";

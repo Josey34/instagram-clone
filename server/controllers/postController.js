@@ -117,13 +117,13 @@ export const toggleLike = asyncHandler(async (req, res) => {
             postId,
             { $pull: { likes: loggedUser } },
             { new: true }
-        ).populate('user', 'username profilePicture');
+        ).populate('user', 'username profilePicture').populate('commentsCount');
     } else {
         updatedPost = await Post.findByIdAndUpdate(
             postId,
             { $push: { likes: loggedUser } },
             { new: true }
-        ).populate('user', 'username profilePicture');
+        ).populate('user', 'username profilePicture').populate('commentsCount');
     }
 
     return res.status(200).json({

@@ -1,0 +1,221 @@
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSidebar } from "../contexts/SidebarContext";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
+import { logout } from "../store/slices/authSlice";
+import { addNotification } from "../store/slices/notificationSlice";
+
+const Sidebar = () => {
+    const { isExpanded, setIsExpanded } = useSidebar();
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { user } = useAppSelector((state) => state.auth);
+
+    const handleLogout = () => {
+        dispatch(logout());
+        dispatch(
+            addNotification({
+                message: "You have been logged out successfully.",
+                type: "info",
+            })
+        );
+        navigate("/login");
+    };
+
+    const isActive = (path: string) => {
+        return location.pathname === path;
+    };
+
+    const navItems = [
+        {
+            name: "Home",
+            path: "/",
+            icon: (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 min-w-6"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                    />
+                </svg>
+            ),
+        },
+        {
+            name: "Search",
+            path: "/search",
+            icon: (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 min-w-6"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                </svg>
+            ),
+        },
+        {
+            name: "Create",
+            path: "/create",
+            icon: (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 min-w-6"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                    />
+                </svg>
+            ),
+        },
+        {
+            name: "Profile",
+            path: `/profile/${user?.username}`,
+            icon: (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 min-w-6"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                </svg>
+            ),
+        },
+    ];
+
+    return (
+        <>
+            {/* Desktop Sidebar - Collapsible */}
+            <div
+                onMouseEnter={() => setIsExpanded(true)}
+                onMouseLeave={() => setIsExpanded(false)}
+                className={`hidden lg:flex flex-col fixed left-0 top-0 h-screen bg-base-100 border-r border-base-300 p-4 z-40 transition-all duration-300 ease-in-out ${
+                    isExpanded ? "w-64" : "w-20"
+                }`}
+            >
+                {/* Logo */}
+                <Link to="/" className="mb-8 px-3 py-2 overflow-hidden">
+                    {isExpanded ? (
+                        <span className="text-2xl font-bold">Instagram</span>
+                    ) : (
+                        <span className="text-2xl">📷</span>
+                    )}
+                </Link>
+
+                {/* Navigation Items */}
+                <nav className="flex-1 space-y-2">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`flex items-center gap-4 px-3 py-3 rounded-lg transition-all ${
+                                isActive(item.path)
+                                    ? "bg-base-200 font-semibold"
+                                    : "hover:bg-base-200"
+                            }`}
+                        >
+                            {item.icon}
+                            {isExpanded && (
+                                <span className="text-base whitespace-nowrap">
+                                    {item.name}
+                                </span>
+                            )}
+                        </Link>
+                    ))}
+                </nav>
+
+                {/* Logout Button */}
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-base-200 transition-all w-full text-left mt-auto"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-6 h-6 min-w-6"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                        />
+                    </svg>
+                    {isExpanded && (
+                        <span className="text-base whitespace-nowrap">
+                            Logout
+                        </span>
+                    )}
+                </button>
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 z-40">
+                <div className="flex justify-around items-center h-16 px-4">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                                isActive(item.path)
+                                    ? "text-primary"
+                                    : "text-base-content/70"
+                            }`}
+                        >
+                            {item.icon}
+                        </Link>
+                    ))}
+                    <button
+                        onClick={handleLogout}
+                        className="flex flex-col items-center justify-center p-2 rounded-lg text-base-content/70"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+};
+
+export default Sidebar;

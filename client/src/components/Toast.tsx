@@ -63,7 +63,7 @@ const Toast = () => {
     if (notifications.length === 0) return null;
 
     return (
-        <div className="toast toast-top toast-end z-50">
+        <div className="toast toast-top toast-end z-50 lg:mr-4 lg:mt-4">
             {notifications.map((notification) => (
                 <div
                     key={notification.id}

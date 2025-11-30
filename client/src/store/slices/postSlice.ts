@@ -26,6 +26,39 @@ export const getUserPosts = createAsyncThunk(
     }
 );
 
+export const getFeed = createAsyncThunk(
+    "post/getFeed",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get("/posts/feed");
+
+            return data.posts;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data.message
+                    : "Failed to fetch feed"
+            );
+        }
+    }
+);
+
+export const toggleLike = createAsyncThunk(
+    "post/toggleLike",
+    async (postId: string, { rejectWithValue }) => {
+        try {
+            const { data } = await api.post(`/posts/${postId}/like`);
+            return { postId, data };
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data.message
+                    : "Failed to toggle like"
+            );
+        }
+    }
+);
+
 const postSlice = createSlice({
     name: "post",
     initialState,
@@ -36,6 +69,7 @@ const postSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        // GET USER POSTS
         builder.addCase(getUserPosts.pending, (state) => {
             state.loading = true;
             state.error = null;
@@ -47,6 +81,34 @@ const postSlice = createSlice({
         builder.addCase(getUserPosts.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
+        });
+
+        // GET FEED
+        builder.addCase(getFeed.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(getFeed.fulfilled, (state, action) => {
+            state.loading = false;
+            state.posts = action.payload;
+        });
+        builder.addCase(getFeed.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // TOGGLE LIKE
+        builder.addCase(toggleLike.fulfilled, (state, action) => {
+            const postIndex = state.posts.findIndex(
+                (p) => p._id === action.payload.postId
+            );
+            if (postIndex !== -1 && action.payload.data.post) {
+                state.posts = [
+                    ...state.posts.slice(0, postIndex),
+                    action.payload.data.post,
+                    ...state.posts.slice(postIndex + 1),
+                ];
+            }
         });
     },
 });

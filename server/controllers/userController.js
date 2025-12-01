@@ -3,7 +3,7 @@ import { AppError, asyncHandler } from "../middleware/errorHandler.js";
 import User from "../models/User.js";
 
 export const getLoggedInUser = asyncHandler(async (req, res) => {
-    let loggedUser = await User.findById(req.user._id).select("-password")
+    let loggedUser = await User.findById(req.user._id).select("-password").populate('postsCount')
 
     req.user = loggedUser;
 
@@ -21,7 +21,7 @@ export const getUserByUsername = asyncHandler(async (req, res) => {
         throw new AppError("Please provide a username", 400);
     }
 
-    const fetchedUser = await User.findOne({ username }).select("-password")
+    const fetchedUser = await User.findOne({ username }).select("-password").populate('postsCount')
     if (!fetchedUser) {
         throw new AppError("User not found", 404);
     }
@@ -34,7 +34,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
     const updates = {};
     if (bio !== undefined) updates.bio = bio;
-    if (fullname !== undefined) updates.fullName = fullname;
+    if (fullname !== undefined) updates.fullname = fullname;
 
     // Handle profile picture upload
     if (req.file) {
@@ -53,7 +53,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
         req.user._id,
         updates,
         { new: true }
-    ).select("-password");
+    ).select("-password").populate('postsCount');
 
     if (!updatedUser) {
         throw new AppError("User not found", 404);

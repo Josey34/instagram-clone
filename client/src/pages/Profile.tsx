@@ -1,17 +1,20 @@
+import EditProfileDialog from "@/components/EditProfileDialog";
+import FollowListModal from "@/components/FollowListModal";
 import Layout from "@/components/Layout";
+import PostDetailModal from "@/components/PostDetaliModal";
+import SettingsDialog from "@/components/SettingsDialog";
 import PostGridSkeleton from "@/components/skeletons/PostGridSkeleton";
 import UserInfoSkeleton from "@/components/skeletons/UserInfoSkeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { addNotification } from "@/store/slices/notificationSlice";
-import { getUserPosts } from "@/store/slices/postSlice";
+import { getSavedPosts, getUserPosts } from "@/store/slices/postSlice";
 import { getUserByUsername, toggleFollow } from "@/store/slices/userSlice";
 import type { Post } from "@/types";
-import { Grid3x3, Settings } from "lucide-react";
-import { useEffect } from "react";
+import { Bookmark, Grid3x3, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 const Profile = () => {
@@ -25,6 +28,18 @@ const Profile = () => {
     const { posts, loading: postsLoading } = useAppSelector(
         (state) => state.post
     );
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [followModalOpen, setFollowModalOpen] = useState(false);
+    const [followModalType, setFollowModalType] = useState<
+        "followers" | "following"
+    >("followers");
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [postModalOpen, setPostModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<"posts" | "saved">("posts");
+    const [settingsOpen, setSettingsOpen] = useState(false);
+
+    const isOwnProfile = currentUser?.username === username;
+    const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
 
     useEffect(() => {
         if (username) {
@@ -37,15 +52,26 @@ const Profile = () => {
         if (profileUser) {
             dispatch(getUserPosts(profileUser._id));
         }
-    }, [profileUser, dispatch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profileUser?._id, dispatch]);
 
-    const isOwnProfile = currentUser?.username === username;
-    const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
-    
+    useEffect(() => {
+        if (activeTab === "saved" && isOwnProfile) {
+            dispatch(getSavedPosts());
+        } else if (activeTab === "posts" && profileUser) {
+            dispatch(getUserPosts(profileUser._id));
+        }
+    }, [activeTab, isOwnProfile, profileUser, dispatch]);
+
     const handleFollowToggle = async () => {
         if (!profileUser || !username) return;
 
-        const result = await dispatch(toggleFollow(profileUser._id));
+        const result = await dispatch(
+            toggleFollow({
+                userId: profileUser._id,
+                currentUserId: currentUser?._id || "",
+            })
+        );
 
         if (toggleFollow.fulfilled.match(result)) {
             // Refetch the user to get updated counts
@@ -135,10 +161,19 @@ const Profile = () => {
                                             variant="secondary"
                                             size="sm"
                                             className="font-semibold"
+                                            onClick={() =>
+                                                setIsEditDialogOpen(true)
+                                            }
                                         >
                                             Edit profile
                                         </Button>
-                                        <Button variant="ghost" size="icon">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() =>
+                                                setSettingsOpen(true)
+                                            }
+                                        >
                                             <Settings className="h-5 w-5" />
                                         </Button>
                                     </>
@@ -155,7 +190,13 @@ const Profile = () => {
                                         posts
                                     </span>
                                 </div>
-                                <button className="hover:text-muted-foreground transition-colors">
+                                <button
+                                    onClick={() => {
+                                        setFollowModalType("followers");
+                                        setFollowModalOpen(true);
+                                    }}
+                                    className="hover:text-muted-foreground transition-colors"
+                                >
                                     <span className="font-semibold">
                                         {profileUser.followersCount}
                                     </span>{" "}
@@ -163,7 +204,13 @@ const Profile = () => {
                                         followers
                                     </span>
                                 </button>
-                                <button className="hover:text-muted-foreground transition-colors">
+                                <button
+                                    onClick={() => {
+                                        setFollowModalType("following");
+                                        setFollowModalOpen(true);
+                                    }}
+                                    className="hover:text-muted-foreground transition-colors"
+                                >
                                     <span className="font-semibold">
                                         {profileUser.followingCount}
                                     </span>{" "}
@@ -189,37 +236,70 @@ const Profile = () => {
                 <Separator className="mb-0" />
 
                 {/* Tabs Section */}
-                <div className="flex justify-center border-t">
-                    <button className="flex items-center gap-2 px-6 py-4 -mt-px border-t border-foreground text-xs font-semibold tracking-wider">
-                        <Grid3x3 className="h-3 w-3" />
+                <div className="flex justify-center gap-12 py-3">
+                    <button
+                        onClick={() => setActiveTab("posts")}
+                        className={`flex items-center gap-2 text-sm font-semibold pb-1 border-b-2 transition-colors ${
+                            activeTab === "posts"
+                                ? "border-foreground"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Grid3x3 className="w-4 h-4" />
                         POSTS
                     </button>
+                    <button
+                        onClick={() => setActiveTab("saved")}
+                        className={`flex items-center gap-2 text-sm font-semibold pb-1 border-b-2 transition-colors ${
+                            activeTab === "saved"
+                                ? "border-foreground"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Bookmark className="w-4 h-4" />
+                        SAVED
+                    </button>
                 </div>
+                <Separator />
 
                 {/* Posts Grid */}
                 <div className="mt-3">
-                    {postsLoading ? (
+                    {activeTab === "saved" && !isOwnProfile ? (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <p className="text-muted-foreground">
+                                Only you can see your saved posts
+                            </p>
+                        </div>
+                    ) : postsLoading ? (
                         <PostGridSkeleton count={9} />
                     ) : posts.length === 0 ? (
-                        <Card className="p-16 text-center">
+                        <div className="flex flex-col items-center justify-center py-12">
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border-2 border-foreground mb-6">
                                 <Grid3x3 className="h-8 w-8" />
                             </div>
                             <h3 className="text-3xl font-bold mb-2">
-                                No Posts Yet
+                                {activeTab === "saved"
+                                    ? "No Saved Posts"
+                                    : "No Posts Yet"}
                             </h3>
                             <p className="text-muted-foreground">
-                                {isOwnProfile
+                                {activeTab === "saved"
+                                    ? "Save posts to see them here"
+                                    : isOwnProfile
                                     ? "Share your first photo"
                                     : "When this user posts, you'll see their photos here."}
                             </p>
-                        </Card>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-3 gap-1 md:gap-4">
                             {posts.map((post: Post) => (
                                 <div
                                     key={post._id}
                                     className="aspect-square overflow-hidden bg-muted cursor-pointer group relative"
+                                    onClick={() => {
+                                        setSelectedPost(post);
+                                        setPostModalOpen(true);
+                                    }}
                                 >
                                     <img
                                         src={post.image}
@@ -261,6 +341,26 @@ const Profile = () => {
                     )}
                 </div>
             </div>
+            <EditProfileDialog
+                key={isEditDialogOpen ? "open" : "closed"}
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
+            <FollowListModal
+                open={followModalOpen}
+                onOpenChange={setFollowModalOpen}
+                userId={profileUser._id}
+                type={followModalType}
+            />
+            <PostDetailModal
+                open={postModalOpen}
+                onOpenChange={setPostModalOpen}
+                post={selectedPost}
+            />
+            <SettingsDialog
+                open={settingsOpen}
+                onOpenChange={setSettingsOpen}
+            />
         </Layout>
     );
 };

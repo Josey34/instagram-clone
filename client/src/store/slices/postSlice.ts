@@ -27,6 +27,22 @@ export const getUserPosts = createAsyncThunk(
     }
 );
 
+export const deletePost = createAsyncThunk(
+    "post/deletePost",
+    async (postId: string, { rejectWithValue }) => {
+        try {
+            await api.delete(`/posts/${postId}`);
+            return postId;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to delete post"
+            );
+        }
+    }
+);
+
 export const getFeed = createAsyncThunk(
     "post/getFeed",
     async (_, { rejectWithValue }) => {
@@ -60,6 +76,22 @@ export const toggleLike = createAsyncThunk(
     }
 );
 
+export const getSavedPosts = createAsyncThunk(
+    "post/getSavedPosts",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get("/posts/saved");
+            return data.posts;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to fetch saved posts"
+            );
+        }
+    }
+);
+
 const postSlice = createSlice({
     name: "post",
     initialState,
@@ -80,6 +112,23 @@ const postSlice = createSlice({
             state.posts = action.payload;
         });
         builder.addCase(getUserPosts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // DELETE POST
+        builder.addCase(deletePost.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(deletePost.fulfilled, (state, action) => {
+            state.loading = false;
+            // Remove the deleted post from the posts array
+            state.posts = state.posts.filter(
+                (post) => post._id !== action.payload
+            );
+        });
+        builder.addCase(deletePost.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
         });
@@ -133,6 +182,20 @@ const postSlice = createSlice({
                     state.posts[postIndex].commentsCount - 1
                 );
             }
+        });
+
+        // GET SAVED POSTS
+        builder.addCase(getSavedPosts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(getSavedPosts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.posts = action.payload;
+        });
+        builder.addCase(getSavedPosts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
         });
     },
 });

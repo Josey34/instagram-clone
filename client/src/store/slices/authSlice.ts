@@ -1,7 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import api from "../../api/axios";
-import type { AuthState, LoginCredentials, RegisterCredentials } from "../../types";
+import type {
+    AuthState,
+    LoginCredentials,
+    RegisterCredentials,
+} from "../../types";
 
 const initialState: AuthState = {
     user: null,
@@ -64,6 +68,27 @@ export const getCurrentUser = createAsyncThunk(
     }
 );
 
+export const updateProfile = createAsyncThunk(
+    "auth/updateProfile",
+    async (formData: FormData, { rejectWithValue }) => {
+        try {
+            const { data } = await api.put("/users/me", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            return data;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to update profile"
+            );
+        }
+    }
+);
+
 const authSlice = createSlice({
     name: "auth",
     initialState,
@@ -96,7 +121,7 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload as string;
         });
-        
+
         // REGISTER
         builder.addCase(register.pending, (state) => {
             state.loading = true;
@@ -104,7 +129,8 @@ const authSlice = createSlice({
         });
         builder.addCase(register.fulfilled, (state, action) => {
             state.loading = false;
-            state.user = action.payload.user || action.payload.userWithoutPassword;
+            state.user =
+                action.payload.user || action.payload.userWithoutPassword;
             state.token = action.payload.token;
             state.isAuthenticated = true;
         });
@@ -112,7 +138,7 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload as string;
         });
-        
+
         // GET CURRENT USER
         builder.addCase(getCurrentUser.pending, (state) => {
             state.loading = true;
@@ -124,6 +150,20 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
         });
         builder.addCase(getCurrentUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // UPDATE PROFILE
+        builder.addCase(updateProfile.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(updateProfile.fulfilled, (state, action) => {
+            state.loading = false;
+            state.user = action.payload;
+        });
+        builder.addCase(updateProfile.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
         });

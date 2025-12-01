@@ -34,8 +34,6 @@ const PostCard = ({ post }: PostCardProps) => {
         setTimeout(() => setIsAnimating(false), 600);
     };
     
-    console.log("IS LIKED", isLiked)
-
     const handleDoubleClick = () => {
         // Only like if not already liked
         if (!isLiked) {

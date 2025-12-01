@@ -1,3 +1,4 @@
+import EditProfileDialog from "@/components/EditProfileDialog";
 import Layout from "@/components/Layout";
 import PostGridSkeleton from "@/components/skeletons/PostGridSkeleton";
 import UserInfoSkeleton from "@/components/skeletons/UserInfoSkeleton";
@@ -11,7 +12,7 @@ import { getUserPosts } from "@/store/slices/postSlice";
 import { getUserByUsername, toggleFollow } from "@/store/slices/userSlice";
 import type { Post } from "@/types";
 import { Grid3x3, Settings } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 const Profile = () => {
@@ -25,6 +26,7 @@ const Profile = () => {
     const { posts, loading: postsLoading } = useAppSelector(
         (state) => state.post
     );
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     useEffect(() => {
         if (username) {
@@ -37,7 +39,8 @@ const Profile = () => {
         if (profileUser) {
             dispatch(getUserPosts(profileUser._id));
         }
-    }, [profileUser, dispatch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profileUser?._id, dispatch]);
 
     const isOwnProfile = currentUser?.username === username;
     const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
@@ -140,6 +143,7 @@ const Profile = () => {
                                             variant="secondary"
                                             size="sm"
                                             className="font-semibold"
+                                            onClick={() => setIsEditDialogOpen(true)}
                                         >
                                             Edit profile
                                         </Button>
@@ -266,6 +270,11 @@ const Profile = () => {
                     )}
                 </div>
             </div>
+            <EditProfileDialog
+                key={isEditDialogOpen ? "open" : "closed"}
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
         </Layout>
     );
 };

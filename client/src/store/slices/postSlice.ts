@@ -60,6 +60,22 @@ export const toggleLike = createAsyncThunk(
     }
 );
 
+export const getSavedPosts = createAsyncThunk(
+    "post/getSavedPosts",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get("/posts/saved");
+            return data.posts;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to fetch saved posts"
+            );
+        }
+    }
+);
+
 const postSlice = createSlice({
     name: "post",
     initialState,
@@ -133,6 +149,20 @@ const postSlice = createSlice({
                     state.posts[postIndex].commentsCount - 1
                 );
             }
+        });
+
+        // GET SAVED POSTS
+        builder.addCase(getSavedPosts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(getSavedPosts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.posts = action.payload;
+        });
+        builder.addCase(getSavedPosts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
         });
     },
 });

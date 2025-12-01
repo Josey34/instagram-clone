@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { addNotification } from "@/store/slices/notificationSlice";
-import { getUserPosts } from "@/store/slices/postSlice";
+import { getSavedPosts, getUserPosts } from "@/store/slices/postSlice";
 import { getUserByUsername, toggleFollow } from "@/store/slices/userSlice";
 import type { Post } from "@/types";
-import { Grid3x3, Settings } from "lucide-react";
+import { Bookmark, Grid3x3, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -34,6 +34,10 @@ const Profile = () => {
     >("followers");
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [postModalOpen, setPostModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<"posts" | "saved">("posts");
+
+    const isOwnProfile = currentUser?.username === username;
+    const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
 
     useEffect(() => {
         if (username) {
@@ -49,8 +53,13 @@ const Profile = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profileUser?._id, dispatch]);
 
-    const isOwnProfile = currentUser?.username === username;
-    const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
+    useEffect(() => {
+        if (activeTab === "saved" && isOwnProfile) {
+            dispatch(getSavedPosts());
+        } else if (activeTab === "posts" && profileUser) {
+            dispatch(getUserPosts(profileUser._id));
+        }
+    }, [activeTab, isOwnProfile, profileUser, dispatch]);
 
     const handleFollowToggle = async () => {
         if (!profileUser || !username) return;
@@ -219,16 +228,41 @@ const Profile = () => {
                 <Separator className="mb-0" />
 
                 {/* Tabs Section */}
-                <div className="flex justify-center border-t">
-                    <button className="flex items-center gap-2 px-6 py-4 -mt-px border-t border-foreground text-xs font-semibold tracking-wider">
-                        <Grid3x3 className="h-3 w-3" />
+                <div className="flex justify-center gap-12 py-3">
+                    <button
+                        onClick={() => setActiveTab("posts")}
+                        className={`flex items-center gap-2 text-sm font-semibold pb-1 border-b-2 transition-colors ${
+                            activeTab === "posts"
+                                ? "border-foreground"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Grid3x3 className="w-4 h-4" />
                         POSTS
                     </button>
+                    <button
+                        onClick={() => setActiveTab("saved")}
+                        className={`flex items-center gap-2 text-sm font-semibold pb-1 border-b-2 transition-colors ${
+                            activeTab === "saved"
+                                ? "border-foreground"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <Bookmark className="w-4 h-4" />
+                        SAVED
+                    </button>
                 </div>
+                <Separator />
 
                 {/* Posts Grid */}
                 <div className="mt-3">
-                    {postsLoading ? (
+                    {activeTab === "saved" && !isOwnProfile ? (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <p className="text-muted-foreground">
+                                Only you can see your saved posts
+                            </p>
+                        </div>
+                    ) : postsLoading ? (
                         <PostGridSkeleton count={9} />
                     ) : posts.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12">
@@ -236,10 +270,12 @@ const Profile = () => {
                                 <Grid3x3 className="h-8 w-8" />
                             </div>
                             <h3 className="text-3xl font-bold mb-2">
-                                No Posts Yet
+                                {activeTab === "saved" ? "No Saved Posts" : "No Posts Yet"}
                             </h3>
                             <p className="text-muted-foreground">
-                                {isOwnProfile
+                                {activeTab === "saved"
+                                    ? "Save posts to see them here"
+                                    : isOwnProfile
                                     ? "Share your first photo"
                                     : "When this user posts, you'll see their photos here."}
                             </p>

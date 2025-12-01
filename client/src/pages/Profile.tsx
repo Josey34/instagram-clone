@@ -21,7 +21,7 @@ const Profile = () => {
     const { username } = useParams<{ username: string }>();
     const dispatch = useAppDispatch();
 
-    const { user: currentUser } = useAppSelector((state) => state.auth);
+    const { user: currentUser, loading: authLoading } = useAppSelector((state) => state.auth);
     const { profileUser, loading: userLoading } = useAppSelector(
         (state) => state.user
     );
@@ -97,7 +97,7 @@ const Profile = () => {
         }
     };
 
-    if (!profileUser) {
+    if (!profileUser || userLoading || (isOwnProfile && authLoading)) {
         return (
             <Layout>
                 <div className="max-w-4xl mx-auto space-y-8">
@@ -351,6 +351,7 @@ const Profile = () => {
                 onOpenChange={setFollowModalOpen}
                 userId={profileUser._id}
                 type={followModalType}
+                onFollowChange={() => username&& dispatch(getUserByUsername(username))}
             />
             <PostDetailModal
                 open={postModalOpen}

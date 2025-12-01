@@ -52,13 +52,15 @@ const exploreSlice = createSlice({
         });
         builder.addCase(getExplore.fulfilled, (state, action) => {
             state.loading = false;
-            if (state.page === 1) {
+            const currentPage = action.payload.pagination.currentPage;
+
+            if (currentPage === 1) {
                 state.posts = action.payload.posts;
             } else {
                 state.posts = [...state.posts, ...action.payload.posts];
             }
-            state.page = state.page + 1; // Increment page for next load
-            state.hasMore = action.payload.hasMore;
+            state.page = currentPage + 1;
+            state.hasMore = action.payload.pagination.hasMore;
         });
         builder.addCase(getExplore.rejected, (state, action) => {
             state.loading = false;

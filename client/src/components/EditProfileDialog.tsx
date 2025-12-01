@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { updateProfile } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
+import { getUserByUsername } from "@/store/slices/userSlice";
 import { Camera } from "lucide-react";
 import { useState } from "react";
 
@@ -64,6 +65,11 @@ const EditProfileDialog = ({ open, onOpenChange }: EditProfileDialogProps) => {
                 })
             );
             onOpenChange(false);
+
+            // Refetch the profile user if on profile page
+            if (user?.username) {
+                dispatch(getUserByUsername(user.username));
+            }
         } else {
             dispatch(
                 addNotification({

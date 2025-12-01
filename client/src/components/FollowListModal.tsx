@@ -20,6 +20,7 @@ interface FollowListModalProps {
     onOpenChange: (open: boolean) => void;
     userId: string;
     type: "followers" | "following";
+    onFollowChange?: () => void;
 }
 
 const FollowListModal = ({
@@ -27,6 +28,7 @@ const FollowListModal = ({
     onOpenChange,
     userId,
     type,
+    onFollowChange
 }: FollowListModalProps) => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -80,6 +82,9 @@ const FollowListModal = ({
             } else {
                 dispatch(getFollowing(userId));
             }
+
+            // Notify parent to refresh profile data
+            onFollowChange?.();
         }
     };
 

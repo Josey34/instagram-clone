@@ -1,4 +1,5 @@
 import EditProfileDialog from "@/components/EditProfileDialog";
+import FollowListModal from "@/components/FollowListModal";
 import Layout from "@/components/Layout";
 import PostGridSkeleton from "@/components/skeletons/PostGridSkeleton";
 import UserInfoSkeleton from "@/components/skeletons/UserInfoSkeleton";
@@ -27,6 +28,10 @@ const Profile = () => {
         (state) => state.post
     );
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [followModalOpen, setFollowModalOpen] = useState(false);
+    const [followModalType, setFollowModalType] = useState<
+        "followers" | "following"
+    >("followers");
 
     useEffect(() => {
         if (username) {
@@ -143,7 +148,9 @@ const Profile = () => {
                                             variant="secondary"
                                             size="sm"
                                             className="font-semibold"
-                                            onClick={() => setIsEditDialogOpen(true)}
+                                            onClick={() =>
+                                                setIsEditDialogOpen(true)
+                                            }
                                         >
                                             Edit profile
                                         </Button>
@@ -164,7 +171,13 @@ const Profile = () => {
                                         posts
                                     </span>
                                 </div>
-                                <button className="hover:text-muted-foreground transition-colors">
+                                <button
+                                    onClick={() => {
+                                        setFollowModalType("followers");
+                                        setFollowModalOpen(true);
+                                    }}
+                                    className="hover:text-muted-foreground transition-colors"
+                                >
                                     <span className="font-semibold">
                                         {profileUser.followersCount}
                                     </span>{" "}
@@ -172,7 +185,13 @@ const Profile = () => {
                                         followers
                                     </span>
                                 </button>
-                                <button className="hover:text-muted-foreground transition-colors">
+                                <button
+                                    onClick={() => {
+                                        setFollowModalType("following");
+                                        setFollowModalOpen(true);
+                                    }}
+                                    className="hover:text-muted-foreground transition-colors"
+                                >
                                     <span className="font-semibold">
                                         {profileUser.followingCount}
                                     </span>{" "}
@@ -274,6 +293,12 @@ const Profile = () => {
                 key={isEditDialogOpen ? "open" : "closed"}
                 open={isEditDialogOpen}
                 onOpenChange={setIsEditDialogOpen}
+            />
+            <FollowListModal
+                open={followModalOpen}
+                onOpenChange={setFollowModalOpen}
+                userId={profileUser._id}
+                type={followModalType}
             />
         </Layout>
     );

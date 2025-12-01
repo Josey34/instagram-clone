@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from './slices/authSlice';
 import commentReducer from './slices/commentSlice';
 import exploreReducer from './slices/exploreSlice';
+import followReducer from './slices/followSlice';
 import notificationReducer from './slices/notificationSlice';
 import postReducer from './slices/postSlice';
 import searchReducer from './slices/searchSlice';
@@ -15,7 +16,8 @@ export const store = configureStore({
         user: userReducer,
         comment: commentReducer,
         search: searchReducer,
-        explore: exploreReducer
+        explore: exploreReducer,
+        follow: followReducer,
     }
 });
 

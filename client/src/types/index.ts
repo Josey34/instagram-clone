@@ -23,6 +23,7 @@ export interface UserPreview {
     _id: string;
     username: string;
     profilePicture: string;
+    followers: string[];
 }
 
 export interface PostState {

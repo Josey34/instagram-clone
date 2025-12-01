@@ -2,17 +2,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-import { Heart, MessageCircle, Trash2 } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 import { addNotification } from "@/store/slices/notificationSlice";
 import { deletePost, toggleLike } from "@/store/slices/postSlice";
 
+import { cn } from "@/lib/utils";
 import { getComments } from "@/store/slices/commentSlice";
+import { toggleFollow } from "@/store/slices/userSlice";
 import type { Post } from "@/types";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CommentInput from "./CommentInput";
 import CommentList from "./CommentList";
 
@@ -32,8 +34,29 @@ const PostDetailModal = ({
     const { comments, loading: commentsLoading } = useAppSelector(
         (state) => state.comment
     );
+    const { posts } = useAppSelector((state) => state.post);
+
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [localFollowState, setLocalFollowState] = useState<boolean | null>(
+        null
+    );
+    const [isAnimating, setIsAnimating] = useState(false);
+
     const postComments = post ? comments[post._id] || [] : [];
+    const updatedPost = posts.find((p) => p._id === post?._id) || post;
+    const isLiked = currentUser
+        ? updatedPost?.likes.includes(currentUser._id)
+        : false;
+
+    const initialFollowState = useMemo(() => {
+        if (post && currentUser) {
+            return post.user.followers?.includes(currentUser._id) || false;
+        }
+        return false;
+    }, [post, currentUser]);
+
+    const isFollowing =
+        localFollowState !== null ? localFollowState : initialFollowState;
 
     useEffect(() => {
         if (post && open && !postComments.length) {
@@ -42,19 +65,11 @@ const PostDetailModal = ({
     }, [post, open, postComments.length, dispatch]);
 
     if (!post) return null;
-    const isLiked = post.likes?.includes(currentUser?._id || "");
 
-    const handleLike = async () => {
-        const result = await dispatch(toggleLike(post._id));
-
-        if (toggleLike.fulfilled.match(result)) {
-            dispatch(
-                addNotification({
-                    message: isLiked ? "Unliked post" : "Liked post",
-                    type: "success",
-                })
-            );
-        }
+    const handleLike = () => {
+        setIsAnimating(true);
+        dispatch(toggleLike(post._id));
+        setTimeout(() => setIsAnimating(false), 600);
     };
 
     const handleDelete = async () => {
@@ -81,8 +96,29 @@ const PostDetailModal = ({
         }
     };
 
+    const handleFollowToggle = async (userId: string) => {
+        const result = await dispatch(
+            toggleFollow({
+                userId,
+                currentUserId: currentUser?._id || "",
+            })
+        );
+
+        if (toggleFollow.fulfilled.match(result)) {
+            // Update local state immediately
+            setLocalFollowState(!isFollowing);
+
+            dispatch(
+                addNotification({
+                    message: isFollowing ? "Unfollowed" : "Following",
+                    type: "success",
+                })
+            );
+        }
+    };
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog key={post?._id} open={open} onOpenChange={onOpenChange}>
             <DialogTitle title={post.user?.username} />
             <DialogContent
                 className="max-w-5xl h-[90vh] p-0 [&>button]:hidden"
@@ -119,6 +155,21 @@ const PostDetailModal = ({
                                     {post.user?.username}
                                 </span>
                             </div>
+
+                            {/* Follow/Unfollow Button */}
+                            {currentUser?._id !== post.user?._id && (
+                                <Button
+                                    onClick={() =>
+                                        handleFollowToggle(post.user._id)
+                                    }
+                                    variant={
+                                        isFollowing ? "secondary" : "default"
+                                    }
+                                    size="sm"
+                                >
+                                    {isFollowing ? "Following" : "Follow"}
+                                </Button>
+                            )}
 
                             {/* Delete button - only show for post owner */}
                             {currentUser?._id === post.user?._id && (
@@ -171,17 +222,54 @@ const PostDetailModal = ({
                         <div className="border-t p-4 space-y-2">
                             <div className="flex items-center gap-4">
                                 <Button
+                                    onClick={handleLike}
                                     variant="ghost"
                                     size="icon"
-                                    onClick={handleLike}
+                                    className="relative overflow-visible h-8 w-8"
+                                    aria-label={isLiked ? "Unlike" : "Like"}
                                 >
-                                    <Heart
-                                        className={`w-6 h-6 ${
-                                            isLiked
-                                                ? "fill-red-500 text-red-500"
-                                                : ""
-                                        }`}
-                                    />
+                                    {isLiked ? (
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className={cn(
+                                                "w-6 h-6 text-destructive transition-all duration-300",
+                                                isAnimating
+                                                    ? "scale-125 animate-pulse"
+                                                    : "scale-100"
+                                            )}
+                                        >
+                                            <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+                                        </svg>
+                                    ) : (
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className={cn(
+                                                "w-6 h-6 transition-all duration-300",
+                                                isAnimating
+                                                    ? "scale-110"
+                                                    : "scale-100"
+                                            )}
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                                            />
+                                        </svg>
+                                    )}
+
+                                    {/* Animated heart burst effect when liking */}
+                                    {isAnimating && isLiked && (
+                                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span className="absolute w-8 h-8 bg-destructive/30 rounded-full animate-ping" />
+                                        </span>
+                                    )}
                                 </Button>
                                 <Button variant="ghost" size="icon">
                                     <MessageCircle className="w-6 h-6" />

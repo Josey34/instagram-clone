@@ -1,14 +1,17 @@
 import Layout from "@/components/Layout";
+import PostDetailModal from "@/components/PostDetaliModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { getExplore } from "@/store/slices/exploreSlice";
 import type { Post } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Explore = () => {
     const dispatch = useAppDispatch();
     const { posts, loading } = useAppSelector((state) => state.explore);
-
+    const [postModalOpen, setPostModalOpen] = useState(false);
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    
     useEffect(() => {
         dispatch(getExplore({ page: 1 }));
     }, [dispatch]);
@@ -30,6 +33,10 @@ const Explore = () => {
                             <div
                                 key={post._id}
                                 className="aspect-square overflow-hidden bg-muted cursor-pointer group relative"
+                                onClick={() => {
+                                        setSelectedPost(post);
+                                        setPostModalOpen(true);
+                                    }}
                             >
                                 <img
                                     src={post.image}
@@ -67,6 +74,11 @@ const Explore = () => {
                     </div>
                 )}
             </div>
+            <PostDetailModal
+                open={postModalOpen}
+                onOpenChange={setPostModalOpen}
+                post={selectedPost}
+            />
         </Layout>
     );
 };

@@ -1,15 +1,15 @@
-import { formatDistanceToNow } from "date-fns";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { cn } from "@/lib/utils";
 import { getComments } from "@/store/slices/commentSlice";
 import { toggleLike } from "@/store/slices/postSlice";
 import type { Post } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import CommentInput from "./CommentInput";
 import CommentList from "./CommentList";
 
@@ -33,6 +33,8 @@ const PostCard = ({ post }: PostCardProps) => {
         dispatch(toggleLike(post._id));
         setTimeout(() => setIsAnimating(false), 600);
     };
+    
+    console.log("IS LIKED", isLiked)
 
     const handleDoubleClick = () => {
         // Only like if not already liked

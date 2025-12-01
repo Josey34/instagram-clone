@@ -1,8 +1,7 @@
-import mongoose from "mongoose";
+import { AppError, asyncHandler } from "../middleware/errorHandler.js";
 import Comment from "../models/Comment.js";
 import Post from "../models/Post.js";
 import User from "../models/User.js";
-import { AppError, asyncHandler } from "../middleware/errorHandler.js";
 import { extractHashtags } from "../utils/extractHashtag.js";
 
 export const createPost = asyncHandler(async (req, res) => {
@@ -211,7 +210,7 @@ export const searchPostsByHashtag = asyncHandler(async (req, res) => {
 });
 
 export const getExplorePosts = asyncHandler(async (req, res) => {
-    const loggedUserId = new mongoose.Types.ObjectId(req.user.id);
+    const loggedUserId = req.user.id;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -220,36 +219,12 @@ export const getExplorePosts = asyncHandler(async (req, res) => {
     // Count total posts (excluding user's own)
     const totalPosts = await Post.countDocuments({ user: { $ne: loggedUserId } });
 
-    const posts = await Post.aggregate([
-        { $match: { user: { $ne: loggedUserId } } },
-
-        { $addFields: { likesCount: { $size: "$likes" } } },
-
-        { $sort: { likesCount: -1, createdAt: -1 } },
-
-        { $skip: skip },
-        { $limit: limit },
-
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'user',
-                foreignField: '_id',
-                as: 'user'
-            }
-        },
-
-        { $unwind: '$user' },
-
-        {
-            $project: {
-                'user.password': 0,
-                'user.email': 0,
-                'user.followers': 0,
-                'user.following': 0
-            }
-        }
-    ]);
+    const posts = await Post.find({ user: { $ne: loggedUserId } })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('user', 'username profilePicture bio')
+        .populate('commentsCount');
 
     const totalPages = Math.ceil(totalPosts / limit);
     const hasMore = page < totalPages;

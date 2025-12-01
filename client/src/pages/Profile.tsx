@@ -41,11 +41,16 @@ const Profile = () => {
 
     const isOwnProfile = currentUser?.username === username;
     const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
-    
+
     const handleFollowToggle = async () => {
         if (!profileUser || !username) return;
 
-        const result = await dispatch(toggleFollow(profileUser._id));
+        const result = await dispatch(
+            toggleFollow({
+                userId: profileUser._id,
+                currentUserId: currentUser?._id || "",
+            })
+        );
 
         if (toggleFollow.fulfilled.match(result)) {
             // Refetch the user to get updated counts

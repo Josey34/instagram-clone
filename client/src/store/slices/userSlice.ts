@@ -28,10 +28,13 @@ export const getUserByUsername = createAsyncThunk(
 
 export const toggleFollow = createAsyncThunk(
     "user/toggleFollow",
-    async (userId: string, { rejectWithValue }) => {
+    async (
+        { userId, currentUserId }: { userId: string; currentUserId: string },
+        { rejectWithValue }
+    ) => {
         try {
             const { data } = await api.post(`/users/${userId}/follow`);
-            return data;
+            return { ...data, currentUserId };
         } catch (e: unknown) {
             return rejectWithValue(
                 axios.isAxiosError(e)
@@ -68,13 +71,33 @@ const userSlice = createSlice({
 
         // TOGGLE FOLLOW
         builder.addCase(toggleFollow.pending, (state) => {
-            state.loading = true;
+            // state.loading = true;
             state.error = null;
         });
         builder.addCase(toggleFollow.fulfilled, (state, action) => {
             state.loading = false;
             if (state.profileUser) {
-                state.profileUser = action.payload.user;
+                const isUnfollowing =
+                    action.payload.message.includes("Unfollowed");
+                const currentUserId = action.payload.currentUserId;
+
+                if (isUnfollowing) {
+                    state.profileUser.followers =
+                        state.profileUser.followers.filter(
+                            (id) => id !== currentUserId
+                        );
+                    state.profileUser.followersCount = Math.max(
+                        0,
+                        (state.profileUser.followersCount || 0) - 1
+                    );
+                } else {
+                    state.profileUser.followers = [
+                        ...state.profileUser.followers,
+                        currentUserId,
+                    ];
+                    state.profileUser.followersCount =
+                        (state.profileUser.followersCount || 0) + 1;
+                }
             }
         });
         builder.addCase(toggleFollow.rejected, (state, action) => {

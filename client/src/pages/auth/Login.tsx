@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { login } from "../../store/slices/authSlice";
-import { addNotification } from "../../store/slices/notificationSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { login } from "@/store/slices/authSlice";
+import { addNotification } from "@/store/slices/notificationSlice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -41,70 +45,68 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-base-200">
-            <div className="card w-full max-w-md bg-base-100 shadow-xl">
-                <div className="card-body">
-                    {/* Logo */}
-                    <h2 className="card-title text-3xl font-bold justify-center mb-2">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader className="space-y-1">
+                    <CardTitle className="text-3xl font-bold text-center">
                         Instagram
-                    </h2>
-
-                    {/* Form */}
+                    </CardTitle>
+                    <CardDescription className="text-center">
+                        Log in to see photos and videos from your friends
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Username</span>
-                            </label>
-                            <input
+                        <div className="space-y-2">
+                            <Label htmlFor="username">Username</Label>
+                            <Input
+                                id="username"
                                 type="text"
                                 placeholder="Enter your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
-                                className="input input-bordered w-full"
                             />
                         </div>
 
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Password</span>
-                            </label>
-                            <input
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
                                 type="password"
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="input input-bordered w-full"
                             />
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="btn btn-primary w-full"
+                            className="w-full"
                         >
-                            {loading ? (
-                                <>
-                                    <span className="loading loading-spinner"></span>
-                                    Logging in...
-                                </>
-                            ) : (
-                                "Log In"
-                            )}
-                        </button>
+                            {loading ? "Logging in..." : "Log In"}
+                        </Button>
                     </form>
 
-                    {/* Link to Register */}
-                    <div className="divider">OR</div>
-                    <p className="text-center">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card px-2 text-muted-foreground">Or</span>
+                        </div>
+                    </div>
+
+                    <p className="text-center text-sm">
                         Don't have an account?{" "}
-                        <Link to="/register" className="link link-primary">
+                        <Link to="/register" className="text-primary hover:underline">
                             Sign up
                         </Link>
                     </p>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

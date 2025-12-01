@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
 
 const ThemeToggle = () => {
     const [theme, setTheme] = useState<string>(
@@ -6,8 +8,15 @@ const ThemeToggle = () => {
     );
 
     useEffect(() => {
-        const html = document.documentElement;
-        html.setAttribute("data-theme", theme);
+        const root = document.documentElement;
+
+        // Remove both classes first
+        root.classList.remove("light", "dark");
+
+        // Add the current theme class
+        root.classList.add(theme);
+
+        // Store in localStorage
         localStorage.setItem("theme", theme);
     }, [theme]);
 
@@ -17,45 +26,18 @@ const ThemeToggle = () => {
 
     return (
         <div className="fixed bottom-20 lg:bottom-6 right-6 z-50">
-            <button
+            <Button
                 onClick={toggleTheme}
-                className="btn btn-circle btn-lg shadow-lg"
+                size="icon"
+                className="h-14 w-14 rounded-full shadow-lg"
                 aria-label="Toggle theme"
             >
                 {theme === "light" ? (
-                    // Moon icon for dark mode
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-                        />
-                    </svg>
+                    <Moon className="h-6 w-6" />
                 ) : (
-                    // Sun icon for light mode
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                        />
-                    </svg>
+                    <Sun className="h-6 w-6" />
                 )}
-            </button>
+            </Button>
         </div>
     );
 };

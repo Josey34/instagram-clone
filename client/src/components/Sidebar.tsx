@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useSidebar } from "../contexts/SidebarContext";
-import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { logout } from "../store/slices/authSlice";
-import { addNotification } from "../store/slices/notificationSlice";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { logout } from "@/store/slices/authSlice";
+import { addNotification } from "@/store/slices/notificationSlice";
+import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
     const { isExpanded, setIsExpanded } = useSidebar();
@@ -115,9 +116,10 @@ const Sidebar = () => {
             <div
                 onMouseEnter={() => setIsExpanded(true)}
                 onMouseLeave={() => setIsExpanded(false)}
-                className={`hidden lg:flex flex-col fixed left-0 top-0 h-screen bg-base-100 border-r border-base-300 p-4 z-40 transition-all duration-300 ease-in-out ${
+                className={cn(
+                    "hidden lg:flex flex-col fixed left-0 top-0 h-screen bg-card border-r border-border p-4 z-40 transition-all duration-300 ease-in-out",
                     isExpanded ? "w-64" : "w-20"
-                }`}
+                )}
             >
                 {/* Logo */}
                 <Link to="/" className="mb-8 px-3 py-2 overflow-hidden">
@@ -134,11 +136,12 @@ const Sidebar = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-4 px-3 py-3 rounded-lg transition-all ${
+                            className={cn(
+                                "flex items-center gap-4 px-3 py-3 rounded-lg transition-all",
                                 isActive(item.path)
-                                    ? "bg-base-200 font-semibold"
-                                    : "hover:bg-base-200"
-                            }`}
+                                    ? "bg-secondary font-semibold"
+                                    : "hover:bg-secondary/50"
+                            )}
                         >
                             {item.icon}
                             {isExpanded && (
@@ -153,7 +156,7 @@ const Sidebar = () => {
                 {/* Logout Button */}
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-base-200 transition-all w-full text-left mt-auto"
+                    className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-secondary/50 transition-all w-full text-left mt-auto"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -178,24 +181,25 @@ const Sidebar = () => {
             </div>
 
             {/* Mobile Bottom Navigation */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 z-40">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40">
                 <div className="flex justify-around items-center h-16 px-4">
                     {navItems.map((item) => (
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                            className={cn(
+                                "flex flex-col items-center justify-center p-2 rounded-lg transition-colors",
                                 isActive(item.path)
                                     ? "text-primary"
-                                    : "text-base-content/70"
-                            }`}
+                                    : "text-muted-foreground"
+                            )}
                         >
                             {item.icon}
                         </Link>
                     ))}
                     <button
                         onClick={handleLogout}
-                        className="flex flex-col items-center justify-center p-2 rounded-lg text-base-content/70"
+                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

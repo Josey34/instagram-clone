@@ -1,10 +1,15 @@
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { getComments } from "../store/slices/commentSlice";
-import { toggleLike } from "../store/slices/postSlice";
-import type { Post } from "../types";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { getComments } from "@/store/slices/commentSlice";
+import { toggleLike } from "@/store/slices/postSlice";
+import type { Post } from "@/types";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import CommentInput from "./CommentInput";
 import CommentList from "./CommentList";
 
@@ -54,21 +59,17 @@ const PostCard = ({ post }: PostCardProps) => {
     }, [showComments, postComments.length, dispatch, post._id]);
 
     return (
-        <div className="card bg-base-100 shadow-xl mb-6">
+        <Card className="mb-6">
             {/* Post Header */}
             <div className="flex items-center gap-3 p-4">
                 <Link to={`/profile/${post.user.username}`}>
-                    <div className="avatar">
-                        <div className="w-10 h-10 rounded-full">
-                            <img
-                                src={
-                                    post.user.profilePicture ||
-                                    "https://via.placeholder.com/40"
-                                }
-                                alt={post.user.username}
-                            />
-                        </div>
-                    </div>
+                    <Avatar>
+                        <AvatarImage
+                            src={post.user.profilePicture || "https://via.placeholder.com/40"}
+                            alt={post.user.username}
+                        />
+                        <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
+                    </Avatar>
                 </Link>
                 <div className="flex-1">
                     <Link
@@ -77,7 +78,7 @@ const PostCard = ({ post }: PostCardProps) => {
                     >
                         {post.user.username}
                     </Link>
-                    <p className="text-sm text-base-content/70">
+                    <p className="text-sm text-muted-foreground">
                         {formatDistanceToNow(new Date(post.createdAt), {
                             addSuffix: true,
                         })}
@@ -112,13 +113,15 @@ const PostCard = ({ post }: PostCardProps) => {
             </figure>
 
             {/* Post Actions */}
-            <div className="card-body">
+            <CardContent className="pt-4">
                 <div className="flex items-center gap-4 mb-2">
                     {/* Like Button */}
                     <div className="flex items-center gap-1">
-                        <button
+                        <Button
                             onClick={handleLike}
-                            className="btn btn-ghost btn-sm btn-circle relative overflow-visible"
+                            variant="ghost"
+                            size="icon"
+                            className="relative overflow-visible h-8 w-8"
                             aria-label={isLiked ? "Unlike" : "Like"}
                         >
                             {isLiked ? (
@@ -126,11 +129,10 @@ const PostCard = ({ post }: PostCardProps) => {
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
                                     fill="currentColor"
-                                    className={`w-6 h-6 text-error transition-all duration-300 ${
-                                        isAnimating
-                                            ? "scale-125 animate-pulse"
-                                            : "scale-100"
-                                    }`}
+                                    className={cn(
+                                        "w-6 h-6 text-destructive transition-all duration-300",
+                                        isAnimating ? "scale-125 animate-pulse" : "scale-100"
+                                    )}
                                 >
                                     <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
                                 </svg>
@@ -141,9 +143,10 @@ const PostCard = ({ post }: PostCardProps) => {
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className={`w-6 h-6 transition-all duration-300 ${
+                                    className={cn(
+                                        "w-6 h-6 transition-all duration-300",
                                         isAnimating ? "scale-110" : "scale-100"
-                                    }`}
+                                    )}
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -156,10 +159,10 @@ const PostCard = ({ post }: PostCardProps) => {
                             {/* Animated heart burst effect when liking */}
                             {isAnimating && isLiked && (
                                 <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <span className="absolute w-8 h-8 bg-error/30 rounded-full animate-ping" />
+                                    <span className="absolute w-8 h-8 bg-destructive/30 rounded-full animate-ping" />
                                 </span>
                             )}
-                        </button>
+                        </Button>
                         <span className="font-semibold text-sm transition-all duration-300">
                             <span className={isAnimating ? "scale-110 inline-block" : "inline-block"}>
                                 {post.likesCount}
@@ -169,9 +172,11 @@ const PostCard = ({ post }: PostCardProps) => {
 
                     {/* Comment Button */}
                     <div className="flex items-center gap-1">
-                        <button
+                        <Button
                             onClick={handleCommentClick}
-                            className="btn btn-ghost btn-sm btn-circle"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -187,7 +192,7 @@ const PostCard = ({ post }: PostCardProps) => {
                                     d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z"
                                 />
                             </svg>
-                        </button>
+                        </Button>
                         <span className="font-semibold text-sm">
                             {post.commentsCount}
                         </span>
@@ -216,43 +221,31 @@ const PostCard = ({ post }: PostCardProps) => {
 
                 {/* Comments Count */}
                 {post.commentsCount > 0 && (
-                    <button
+                    <Button
                         onClick={handleCommentClick}
-                        className="text-base-content/70 text-sm hover:underline text-left mt-2"
+                        variant="ghost"
+                        className="text-muted-foreground text-sm h-auto p-0 hover:underline mt-2"
                     >
                         View all {post.commentsCount} comments
-                    </button>
+                    </Button>
                 )}
-            </div>
+            </CardContent>
 
-            {/* Comments Modal */}
-            {showComments && (
-                <dialog open className="modal">
-                    <div className="modal-box max-w-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-lg">Comments</h3>
-                            <button
-                                onClick={() => setShowComments(false)}
-                                className="btn btn-sm btn-circle btn-ghost"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <CommentList
-                            comments={postComments}
-                            loading={commentsLoading}
-                            postOwnerId={post.user._id}
-                        />
-
-                        <CommentInput postId={post._id} />
-                    </div>
-                    <form method="dialog" className="modal-backdrop">
-                        <button onClick={() => setShowComments(false)}>close</button>
-                    </form>
-                </dialog>
-            )}
-        </div>
+            {/* Comments Dialog */}
+            <Dialog open={showComments} onOpenChange={setShowComments}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Comments</DialogTitle>
+                    </DialogHeader>
+                    <CommentList
+                        comments={postComments}
+                        loading={commentsLoading}
+                        postOwnerId={post.user._id}
+                    />
+                    <CommentInput postId={post._id} />
+                </DialogContent>
+            </Dialog>
+        </Card>
     );
 };
 

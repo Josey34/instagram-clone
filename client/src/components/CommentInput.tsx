@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { useAppDispatch } from "../hooks/reduxHooks";
-import { addComment } from "../store/slices/commentSlice";
-import { addNotification } from "../store/slices/notificationSlice";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { addComment } from "@/store/slices/commentSlice";
+import { addNotification } from "@/store/slices/notificationSlice";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface CommentInputProps {
     postId: string;
@@ -50,27 +53,30 @@ const CommentInput = ({ postId }: CommentInputProps) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center mt-4 pt-4 border-t border-base-300">
-            <input
+        <form onSubmit={handleSubmit} className="flex gap-2 items-center mt-4 pt-4 border-t">
+            <Input
                 type="text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Add a comment..."
-                className="input input-bordered flex-1 input-sm"
                 disabled={isSubmitting}
                 maxLength={500}
+                className="flex-1"
             />
-            <button
+            <Button
                 type="submit"
                 disabled={!text.trim() || isSubmitting}
-                className="btn btn-primary btn-sm"
+                size="sm"
             >
                 {isSubmitting ? (
-                    <span className="loading loading-spinner loading-xs" />
+                    <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Posting...
+                    </>
                 ) : (
                     "Post"
                 )}
-            </button>
+            </Button>
         </form>
     );
 };

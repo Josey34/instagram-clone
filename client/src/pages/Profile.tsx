@@ -1,18 +1,18 @@
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import PostGridSkeleton from "@/components/skeletons/PostGridSkeleton";
 import UserInfoSkeleton from "@/components/skeletons/UserInfoSkeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { addNotification } from "@/store/slices/notificationSlice";
 import { getUserPosts } from "@/store/slices/postSlice";
 import { getUserByUsername, toggleFollow } from "@/store/slices/userSlice";
 import type { Post } from "@/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Settings, Grid3x3 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Grid3x3, Settings } from "lucide-react";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
 
 const Profile = () => {
     const { username } = useParams<{ username: string }>();
@@ -40,14 +40,17 @@ const Profile = () => {
     }, [profileUser, dispatch]);
 
     const isOwnProfile = currentUser?.username === username;
-    const isFollowing = currentUser?.following.includes(profileUser?._id || "");
-
+    const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
+    
     const handleFollowToggle = async () => {
-        if (!profileUser) return;
+        if (!profileUser || !username) return;
 
         const result = await dispatch(toggleFollow(profileUser._id));
 
         if (toggleFollow.fulfilled.match(result)) {
+            // Refetch the user to get updated counts
+            await dispatch(getUserByUsername(username));
+
             dispatch(
                 addNotification({
                     message: isFollowing
@@ -68,7 +71,7 @@ const Profile = () => {
         }
     };
 
-    if (userLoading || !profileUser) {
+    if (!profileUser) {
         return (
             <Layout>
                 <div className="max-w-4xl mx-auto space-y-8">
@@ -91,7 +94,10 @@ const Profile = () => {
                         <div className="ml-4 md:ml-20">
                             <Avatar className="w-20 h-20 md:w-36 md:h-36">
                                 <AvatarImage
-                                    src={profileUser.profilePicture || "https://via.placeholder.com/150"}
+                                    src={
+                                        profileUser.profilePicture ||
+                                        "https://via.placeholder.com/150"
+                                    }
                                     alt={profileUser.username}
                                 />
                                 <AvatarFallback className="text-3xl">
@@ -111,7 +117,11 @@ const Profile = () => {
                                 {!isOwnProfile && (
                                     <Button
                                         onClick={handleFollowToggle}
-                                        variant={isFollowing ? "secondary" : "default"}
+                                        variant={
+                                            isFollowing
+                                                ? "secondary"
+                                                : "default"
+                                        }
                                         size="sm"
                                         className="font-semibold"
                                     >
@@ -121,7 +131,11 @@ const Profile = () => {
 
                                 {isOwnProfile && (
                                     <>
-                                        <Button variant="secondary" size="sm" className="font-semibold">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="font-semibold"
+                                        >
                                             Edit profile
                                         </Button>
                                         <Button variant="ghost" size="icon">
@@ -134,26 +148,39 @@ const Profile = () => {
                             {/* Stats */}
                             <div className="flex gap-10 mb-5 text-base">
                                 <div>
-                                    <span className="font-semibold">{profileUser.postsCount}</span>
-                                    {" "}
-                                    <span className="text-muted-foreground">posts</span>
+                                    <span className="font-semibold">
+                                        {profileUser.postsCount}
+                                    </span>{" "}
+                                    <span className="text-muted-foreground">
+                                        posts
+                                    </span>
                                 </div>
                                 <button className="hover:text-muted-foreground transition-colors">
-                                    <span className="font-semibold">{profileUser.followersCount}</span>
-                                    {" "}
-                                    <span className="text-muted-foreground">followers</span>
+                                    <span className="font-semibold">
+                                        {profileUser.followersCount}
+                                    </span>{" "}
+                                    <span className="text-muted-foreground">
+                                        followers
+                                    </span>
                                 </button>
                                 <button className="hover:text-muted-foreground transition-colors">
-                                    <span className="font-semibold">{profileUser.followingCount}</span>
-                                    {" "}
-                                    <span className="text-muted-foreground">following</span>
+                                    <span className="font-semibold">
+                                        {profileUser.followingCount}
+                                    </span>{" "}
+                                    <span className="text-muted-foreground">
+                                        following
+                                    </span>
                                 </button>
                             </div>
 
                             {/* Bio */}
                             <div className="text-sm">
-                                <p className="font-semibold mb-1">{profileUser.fullname}</p>
-                                <p className="whitespace-pre-wrap">{profileUser.bio || ""}</p>
+                                <p className="font-semibold mb-1">
+                                    {profileUser.fullname}
+                                </p>
+                                <p className="whitespace-pre-wrap">
+                                    {profileUser.bio || ""}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -178,9 +205,13 @@ const Profile = () => {
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border-2 border-foreground mb-6">
                                 <Grid3x3 className="h-8 w-8" />
                             </div>
-                            <h3 className="text-3xl font-bold mb-2">No Posts Yet</h3>
+                            <h3 className="text-3xl font-bold mb-2">
+                                No Posts Yet
+                            </h3>
                             <p className="text-muted-foreground">
-                                {isOwnProfile ? "Share your first photo" : "When this user posts, you'll see their photos here."}
+                                {isOwnProfile
+                                    ? "Share your first photo"
+                                    : "When this user posts, you'll see their photos here."}
                             </p>
                         </Card>
                     ) : (

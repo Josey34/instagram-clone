@@ -1,15 +1,20 @@
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
-import ThemeToggle from "./components/ThemeToggle";
-import Toast from "./components/Toast";
+
 import { SidebarProvider } from "./contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "./hooks/reduxHooks";
+import { getCurrentUser } from "./store/slices/authSlice";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+import ThemeToggle from "./components/ThemeToggle";
+
+import Alert from "./components/Alert";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Explore from "./pages/Explore";
 import Home from "./pages/Home";
-import Profile from "./pages/profile/Profile";
-import { getCurrentUser } from "./store/slices/authSlice";
+import Profile from "./pages/Profile";
+import Search from "./pages/Search";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -25,7 +30,7 @@ function App() {
     return (
         <BrowserRouter>
             <SidebarProvider>
-                <Toast />
+                <Alert />
                 <ThemeToggle />
                 <Routes>
                     <Route
@@ -43,6 +48,22 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Profile />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/search"
+                        element={
+                            <ProtectedRoute>
+                                <Search />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/explore"
+                        element={
+                            <ProtectedRoute>
+                                <Explore />
                             </ProtectedRoute>
                         }
                     />

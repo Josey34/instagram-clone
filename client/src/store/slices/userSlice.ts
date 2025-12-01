@@ -14,7 +14,7 @@ export const getUserByUsername = createAsyncThunk(
     async (username: string, { rejectWithValue }) => {
         try {
             const { data } = await api.get(`/users/${username}`);
-            
+
             return data;
         } catch (e: unknown) {
             return rejectWithValue(
@@ -24,7 +24,7 @@ export const getUserByUsername = createAsyncThunk(
             );
         }
     }
-)
+);
 
 export const toggleFollow = createAsyncThunk(
     "user/toggleFollow",
@@ -67,13 +67,22 @@ const userSlice = createSlice({
         });
 
         // TOGGLE FOLLOW
+        builder.addCase(toggleFollow.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
         builder.addCase(toggleFollow.fulfilled, (state, action) => {
+            state.loading = false;
             if (state.profileUser) {
                 state.profileUser = action.payload.user;
             }
         });
-    }
-})
+        builder.addCase(toggleFollow.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+    },
+});
 
 export const { clearProfileUser } = userSlice.actions;
 export default userSlice.reducer;

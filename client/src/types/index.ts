@@ -90,3 +90,18 @@ export interface Notification {
 export interface NotificationState {
     notifications: Notification[];
 }
+
+export interface SearchState {
+    query: string;
+    results: User[];
+    loading: boolean;
+    error: string | null;
+}
+
+export interface ExploreState {
+    posts: Post[];
+    page: number;
+    hasMore: boolean;
+    loading: boolean;
+    error: string | null;
+}

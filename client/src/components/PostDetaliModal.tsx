@@ -1,11 +1,18 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+import { Heart, MessageCircle, Trash2 } from "lucide-react";
+
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+
 import { addNotification } from "@/store/slices/notificationSlice";
-import { toggleLike } from "@/store/slices/postSlice";
+import { deletePost, toggleLike } from "@/store/slices/postSlice";
+
+import { getComments } from "@/store/slices/commentSlice";
 import type { Post } from "@/types";
-import { Heart, MessageCircle } from "lucide-react";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { useEffect, useState } from "react";
 import CommentInput from "./CommentInput";
 import CommentList from "./CommentList";
 
@@ -22,11 +29,19 @@ const PostDetailModal = ({
 }: PostDetailModalProps) => {
     const dispatch = useAppDispatch();
     const { user: currentUser } = useAppSelector((state) => state.auth);
-    const { comments, loading: commentsLoading } = useAppSelector((state) => state.comment);
-    
+    const { comments, loading: commentsLoading } = useAppSelector(
+        (state) => state.comment
+    );
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const postComments = post ? comments[post._id] || [] : [];
+
+    useEffect(() => {
+        if (post && open && !postComments.length) {
+            dispatch(getComments(post._id));
+        }
+    }, [post, open, postComments.length, dispatch]);
+
     if (!post) return null;
-    
-    const postComments = comments[post._id] || [];
     const isLiked = post.likes?.includes(currentUser?._id || "");
 
     const handleLike = async () => {
@@ -42,9 +57,37 @@ const PostDetailModal = ({
         }
     };
 
+    const handleDelete = async () => {
+        if (!post) return;
+
+        const result = await dispatch(deletePost(post._id));
+
+        if (deletePost.fulfilled.match(result)) {
+            dispatch(
+                addNotification({
+                    message: "Post deleted successfully",
+                    type: "success",
+                })
+            );
+            onOpenChange(false); // Close the modal
+        } else {
+            dispatch(
+                addNotification({
+                    message:
+                        (result.payload as string) || "Failed to delete post",
+                    type: "error",
+                })
+            );
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl h-[90vh] p-0">
+            <DialogTitle title={post.user?.username} />
+            <DialogContent
+                className="max-w-5xl h-[90vh] p-0 [&>button]:hidden"
+                aria-describedby={undefined}
+            >
                 <div className="grid md:grid-cols-2 h-full">
                     {/* Image Section */}
                     <div className="bg-black flex items-center justify-center">
@@ -58,22 +101,36 @@ const PostDetailModal = ({
                     {/* Details Section */}
                     <div className="flex flex-col h-full">
                         {/* Header */}
-                        <div className="p-4 border-b flex items-center gap-3">
-                            <Avatar className="w-10 h-10">
-                                <AvatarImage
-                                    src={
-                                        post.user?.profilePicture ||
-                                        "https://via.placeholder.com/150"
-                                    }
-                                    alt={post.user?.username}
-                                />
-                                <AvatarFallback>
-                                    {post.user?.username[0].toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                            <span className="font-semibold">
-                                {post.user?.username}
-                            </span>
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="w-10 h-10">
+                                    <AvatarImage
+                                        src={
+                                            post.user?.profilePicture ||
+                                            "https://via.placeholder.com/150"
+                                        }
+                                        alt={post.user?.username}
+                                    />
+                                    <AvatarFallback>
+                                        {post.user?.username[0].toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold">
+                                    {post.user?.username}
+                                </span>
+                            </div>
+
+                            {/* Delete button - only show for post owner */}
+                            {currentUser?._id === post.user?._id && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="hover:bg-red-50 dark:hover:bg-red-950"
+                                >
+                                    <Trash2 className="w-5 h-5 text-red-600" />
+                                </Button>
+                            )}
                         </div>
 
                         {/* Caption & Comments */}
@@ -146,6 +203,33 @@ const PostDetailModal = ({
                         </div>
                     </div>
                 </div>
+                {showDeleteConfirm && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-background p-6 rounded-lg max-w-sm mx-4">
+                            <h3 className="text-lg font-semibold mb-2">
+                                Delete Post?
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                Are you sure you want to delete this post? This
+                                action cannot be undone.
+                            </p>
+                            <div className="flex gap-3 justify-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={handleDelete}
+                                >
+                                    Delete
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

@@ -2,6 +2,7 @@ import EditProfileDialog from "@/components/EditProfileDialog";
 import FollowListModal from "@/components/FollowListModal";
 import Layout from "@/components/Layout";
 import PostDetailModal from "@/components/PostDetaliModal";
+import SettingsDialog from "@/components/SettingsDialog";
 import PostGridSkeleton from "@/components/skeletons/PostGridSkeleton";
 import UserInfoSkeleton from "@/components/skeletons/UserInfoSkeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,6 +36,7 @@ const Profile = () => {
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [postModalOpen, setPostModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"posts" | "saved">("posts");
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const isOwnProfile = currentUser?.username === username;
     const isFollowing = profileUser?.followers.includes(currentUser?._id || "");
@@ -165,7 +167,13 @@ const Profile = () => {
                                         >
                                             Edit profile
                                         </Button>
-                                        <Button variant="ghost" size="icon">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() =>
+                                                setSettingsOpen(true)
+                                            }
+                                        >
                                             <Settings className="h-5 w-5" />
                                         </Button>
                                     </>
@@ -270,7 +278,9 @@ const Profile = () => {
                                 <Grid3x3 className="h-8 w-8" />
                             </div>
                             <h3 className="text-3xl font-bold mb-2">
-                                {activeTab === "saved" ? "No Saved Posts" : "No Posts Yet"}
+                                {activeTab === "saved"
+                                    ? "No Saved Posts"
+                                    : "No Posts Yet"}
                             </h3>
                             <p className="text-muted-foreground">
                                 {activeTab === "saved"
@@ -346,6 +356,10 @@ const Profile = () => {
                 open={postModalOpen}
                 onOpenChange={setPostModalOpen}
                 post={selectedPost}
+            />
+            <SettingsDialog
+                open={settingsOpen}
+                onOpenChange={setSettingsOpen}
             />
         </Layout>
     );

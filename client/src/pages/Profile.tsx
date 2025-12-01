@@ -1,11 +1,11 @@
 import EditProfileDialog from "@/components/EditProfileDialog";
 import FollowListModal from "@/components/FollowListModal";
 import Layout from "@/components/Layout";
+import PostDetailModal from "@/components/PostDetaliModal";
 import PostGridSkeleton from "@/components/skeletons/PostGridSkeleton";
 import UserInfoSkeleton from "@/components/skeletons/UserInfoSkeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { addNotification } from "@/store/slices/notificationSlice";
@@ -32,6 +32,8 @@ const Profile = () => {
     const [followModalType, setFollowModalType] = useState<
         "followers" | "following"
     >("followers");
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [postModalOpen, setPostModalOpen] = useState(false);
 
     useEffect(() => {
         if (username) {
@@ -229,7 +231,7 @@ const Profile = () => {
                     {postsLoading ? (
                         <PostGridSkeleton count={9} />
                     ) : posts.length === 0 ? (
-                        <Card className="p-16 text-center">
+                        <div className="flex flex-col items-center justify-center py-12">
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border-2 border-foreground mb-6">
                                 <Grid3x3 className="h-8 w-8" />
                             </div>
@@ -241,13 +243,17 @@ const Profile = () => {
                                     ? "Share your first photo"
                                     : "When this user posts, you'll see their photos here."}
                             </p>
-                        </Card>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-3 gap-1 md:gap-4">
                             {posts.map((post: Post) => (
                                 <div
                                     key={post._id}
                                     className="aspect-square overflow-hidden bg-muted cursor-pointer group relative"
+                                    onClick={() => {
+                                        setSelectedPost(post);
+                                        setPostModalOpen(true);
+                                    }}
                                 >
                                     <img
                                         src={post.image}
@@ -299,6 +305,11 @@ const Profile = () => {
                 onOpenChange={setFollowModalOpen}
                 userId={profileUser._id}
                 type={followModalType}
+            />
+            <PostDetailModal
+                open={postModalOpen}
+                onOpenChange={setPostModalOpen}
+                post={selectedPost}
             />
         </Layout>
     );

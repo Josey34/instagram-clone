@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from './slices/authSlice';
 import commentReducer from './slices/commentSlice';
+import exploreReducer from './slices/exploreSlice';
 import notificationReducer from './slices/notificationSlice';
 import postReducer from './slices/postSlice';
+import searchReducer from './slices/searchSlice';
 import userReducer from './slices/userSlice';
 
 export const store = configureStore({
@@ -11,7 +13,9 @@ export const store = configureStore({
         notification: notificationReducer,
         post: postReducer,
         user: userReducer,
-        comment: commentReducer
+        comment: commentReducer,
+        search: searchReducer,
+        explore: exploreReducer
     }
 });
 

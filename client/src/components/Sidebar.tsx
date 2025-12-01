@@ -1,9 +1,9 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { cn } from "@/lib/utils";
 import { logout } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
-import { cn } from "@/lib/utils";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
     const { isExpanded, setIsExpanded } = useSidebar();
@@ -64,6 +64,26 @@ const Sidebar = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                </svg>
+            ),
+        },
+        {
+            name: "Explore",
+            path: "/explore",
+            icon: (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 min-w-6"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 003.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 00-3.09 3.091z"
                     />
                 </svg>
             ),

@@ -121,35 +121,37 @@ See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for detailed API endpoints and 
 - `POST /auth/reset-password/:token` - Reset password
 
 #### Users
-- `GET /users/profile` - Get current user profile
-- `PUT /users/profile` - Update profile
-- `GET /users/:id` - Get user by ID
-- `POST /users/follow/:id` - Follow user
-- `POST /users/unfollow/:id` - Unfollow user
+- `GET /users/me` - Get current user profile
+- `PUT /users/me` - Update profile
+- `DELETE /users/me` - Delete profile
+- `GET /users/:username` - Get user by username
+- `POST /users/:id/follow` - Follow/unfollow user (toggle)
+- `GET /users/:id/followers` - Get user followers
+- `GET /users/:id/following` - Get user following
 - `GET /users/search?query=` - Search users
 
 #### Posts
-- `POST /posts` - Create post
-- `GET /posts` - Get all posts (paginated)
+- `POST /posts/create` - Create post
 - `GET /posts/feed` - Get personalized feed
+- `GET /posts/explore` - Get explore posts
+- `GET /posts/saved` - Get saved posts
 - `GET /posts/user/:userId` - Get user's posts
 - `GET /posts/:id` - Get single post
-- `PUT /posts/:id` - Update post
+- `GET /posts/:id/comments` - Get post comments
+- `POST /posts/:id/comments` - Add comment
 - `DELETE /posts/:id` - Delete post
-- `POST /posts/:id/like` - Like post
-- `DELETE /posts/:id/like` - Unlike post
-- `GET /posts/search?query=` - Search posts
+- `POST /posts/:id/like` - Like/unlike post (toggle)
+- `POST /posts/:id/save` - Save/unsave post (toggle)
+- `GET /posts/search/hashtag?hashtag=` - Search posts by hashtag
 
 #### Comments
-- `POST /comments/:postId` - Add comment
-- `GET /comments/:postId` - Get post comments
 - `DELETE /comments/:id` - Delete comment
 
 #### Stories
-- `POST /stories` - Create story
-- `GET /stories` - Get following stories
+- `POST /stories/create` - Create story
+- `GET /stories/following` - Get following stories
 - `GET /stories/user/:id` - Get user stories
-- `GET /stories/:id/view` - View story
+- `PUT /stories/:id/view` - View story
 - `DELETE /stories/:id` - Delete story
 
 #### Upload

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { addComment } from "@/store/slices/commentSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface CommentInputProps {
     postId: string;
@@ -53,7 +53,7 @@ const CommentInput = ({ postId }: CommentInputProps) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center mt-4 pt-4 border-t">
+        <form onSubmit={handleSubmit} className="flex gap-2 items-center mt-4 pt-4">
             <Input
                 type="text"
                 value={text}

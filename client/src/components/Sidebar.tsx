@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { logout } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import CreatePost from "./CreatePost";
 
 const Sidebar = () => {
     const { isExpanded, setIsExpanded } = useSidebar();
@@ -11,6 +13,7 @@ const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAppSelector((state) => state.auth);
+    const [createPostOpen, setCreatePostOpen] = useState(false);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -89,26 +92,6 @@ const Sidebar = () => {
             ),
         },
         {
-            name: "Create",
-            path: "/create",
-            icon: (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6 min-w-6"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 4.5v15m7.5-7.5h-15"
-                    />
-                </svg>
-            ),
-        },
-        {
             name: "Profile",
             path: `/profile/${user?.username}`,
             icon: (
@@ -171,6 +154,32 @@ const Sidebar = () => {
                             )}
                         </Link>
                     ))}
+
+                    {/* Create Post Button */}
+                    <button
+                        onClick={() => setCreatePostOpen(true)}
+                        className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-secondary/50 transition-all w-full text-left"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-6 h-6 min-w-6"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 4.5v15m7.5-7.5h-15"
+                            />
+                        </svg>
+                        {isExpanded && (
+                            <span className="text-base whitespace-nowrap">
+                                Create
+                            </span>
+                        )}
+                    </button>
                 </nav>
 
                 {/* Logout Button */}
@@ -217,6 +226,28 @@ const Sidebar = () => {
                             {item.icon}
                         </Link>
                     ))}
+
+                    {/* Create Post Button Mobile */}
+                    <button
+                        onClick={() => setCreatePostOpen(true)}
+                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 4.5v15m7.5-7.5h-15"
+                            />
+                        </svg>
+                    </button>
+
                     <button
                         onClick={handleLogout}
                         className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground"
@@ -238,6 +269,9 @@ const Sidebar = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Create Post Dialog */}
+            <CreatePost open={createPostOpen} onOpenChange={setCreatePostOpen} />
         </>
     );
 };

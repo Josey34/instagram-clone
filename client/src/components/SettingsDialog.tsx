@@ -10,7 +10,6 @@ import { useAppDispatch } from "@/hooks/reduxHooks";
 import { logout } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
 import { Lock, LogOut, User } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface SettingsDialogProps {
@@ -21,7 +20,8 @@ interface SettingsDialogProps {
 const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const [showChangePassword, setShowChangePassword] = useState(false);
+    // Further development
+    // const [showChangePassword, setShowChangePassword] = useState(false);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -47,8 +47,9 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                     <Button
                         variant="ghost"
                         className="w-full justify-start gap-3"
+                        disabled
                         onClick={() => {
-                            setShowChangePassword(true);
+                            // setShowChangePassword(true);
                             // We'll implement this next
                         }}
                     >

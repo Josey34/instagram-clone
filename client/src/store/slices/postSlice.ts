@@ -92,6 +92,90 @@ export const getSavedPosts = createAsyncThunk(
     }
 );
 
+export const createPost = createAsyncThunk(
+    "post/createPost",
+    async (formData: FormData, { rejectWithValue }) => {
+        try {
+            const { data } = await api.post("/posts/create", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            return data.post;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to create post"
+            );
+        }
+    }
+);
+
+export const toggleSavePost = createAsyncThunk(
+    "post/toggleSavePost",
+    async (postId: string, { rejectWithValue }) => {
+        try {
+            const { data } = await api.post(`/posts/${postId}/save`);
+            return { postId, data };
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to toggle save post"
+            );
+        }
+    }
+);
+
+export const getExplorePosts = createAsyncThunk(
+    "post/getExplorePosts",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get("/posts/explore");
+            return data.posts;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to fetch explore posts"
+            );
+        }
+    }
+);
+
+export const searchPostsByHashtag = createAsyncThunk(
+    "post/searchPostsByHashtag",
+    async (hashtag: string, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`/posts/search/hashtag?q=${encodeURIComponent(hashtag)}`);
+            return data.posts;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to search posts by hashtag"
+            );
+        }
+    }
+);
+
+export const getPostById = createAsyncThunk(
+    "post/getPostById",
+    async (postId: string, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`/posts/${postId}`);
+            return data.post;
+        } catch (e: unknown) {
+            return rejectWithValue(
+                axios.isAxiosError(e)
+                    ? e.response?.data?.message
+                    : "Failed to fetch post"
+            );
+        }
+    }
+);
+
 const postSlice = createSlice({
     name: "post",
     initialState,
@@ -194,6 +278,80 @@ const postSlice = createSlice({
             state.posts = action.payload;
         });
         builder.addCase(getSavedPosts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // CREATE POST
+        builder.addCase(createPost.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(createPost.fulfilled, (state, action) => {
+            state.loading = false;
+            state.posts.unshift(action.payload);
+        });
+        builder.addCase(createPost.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // TOGGLE SAVE POST
+        builder.addCase(toggleSavePost.fulfilled, (state, action) => {
+            const postIndex = state.posts.findIndex(
+                (p) => p._id === action.payload.postId
+            );
+            if (postIndex !== -1 && action.payload.data.post) {
+                state.posts[postIndex] = action.payload.data.post;
+            }
+        });
+
+        // GET EXPLORE POSTS
+        builder.addCase(getExplorePosts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(getExplorePosts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.posts = action.payload;
+        });
+        builder.addCase(getExplorePosts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // SEARCH POSTS BY HASHTAG
+        builder.addCase(searchPostsByHashtag.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(searchPostsByHashtag.fulfilled, (state, action) => {
+            state.loading = false;
+            state.posts = action.payload;
+        });
+        builder.addCase(searchPostsByHashtag.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // GET POST BY ID
+        builder.addCase(getPostById.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(getPostById.fulfilled, (state, action) => {
+            state.loading = false;
+            // Check if post already exists in posts array
+            const postIndex = state.posts.findIndex(
+                (p) => p._id === action.payload._id
+            );
+            if (postIndex !== -1) {
+                state.posts[postIndex] = action.payload;
+            } else {
+                state.posts.push(action.payload);
+            }
+        });
+        builder.addCase(getPostById.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
         });

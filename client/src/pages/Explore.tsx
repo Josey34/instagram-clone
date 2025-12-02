@@ -2,18 +2,18 @@ import Layout from "@/components/Layout";
 import PostDetailModal from "@/components/PostDetaliModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { getExplore } from "@/store/slices/exploreSlice";
+import { getExplorePosts } from "@/store/slices/postSlice";
 import type { Post } from "@/types";
 import { useEffect, useState } from "react";
 
 const Explore = () => {
     const dispatch = useAppDispatch();
-    const { posts, loading } = useAppSelector((state) => state.explore);
+    const { posts, loading } = useAppSelector((state) => state.post);
     const [postModalOpen, setPostModalOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-    
+
     useEffect(() => {
-        dispatch(getExplore({ page: 1 }));
+        dispatch(getExplorePosts());
     }, [dispatch]);
 
     return (

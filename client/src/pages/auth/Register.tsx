@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { register } from "@/store/slices/authSlice";
+import { getCurrentUser, register } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -40,6 +40,7 @@ const Register = () => {
         );
 
         if (register.fulfilled.match(result)) {
+            dispatch(getCurrentUser());
             dispatch(addNotification({
                 message: "Registration successful! Welcome to Instagram.",
                 type: "success"

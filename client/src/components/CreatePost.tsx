@@ -4,8 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { addNotification } from "@/store/slices/notificationSlice";
 import { createPost } from "@/store/slices/postSlice";
-import { ImagePlus, X } from "lucide-react";
-import { useState } from "react";
+import { Hash, ImagePlus, X } from "lucide-react";
+import { useState, useMemo } from "react";
 
 interface CreatePostProps {
     open: boolean;
@@ -18,6 +18,12 @@ const CreatePost = ({ open, onOpenChange }: CreatePostProps) => {
     const [previewUrl, setPreviewUrl] = useState<string>("");
     const [caption, setCaption] = useState("");
     const [isUploading, setIsUploading] = useState(false);
+
+    // Extract hashtags from caption
+    const hashtags = useMemo(() => {
+        const hashtagRegex = /#[\w\u0590-\u05ff]+/g;
+        return caption.match(hashtagRegex) || [];
+    }, [caption]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -157,16 +163,36 @@ const CreatePost = ({ open, onOpenChange }: CreatePostProps) => {
                             Caption (Optional)
                         </label>
                         <Textarea
-                            placeholder="Write a caption..."
+                            placeholder="Write a caption... Use #hashtags to make your post discoverable!"
                             value={caption}
                             onChange={(e) => setCaption(e.target.value)}
                             rows={4}
                             maxLength={2200}
                             className="resize-none"
                         />
-                        <p className="text-xs text-gray-500">
-                            {caption.length}/2200 characters
-                        </p>
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-500">
+                                {caption.length}/2200 characters
+                            </p>
+                            {hashtags.length > 0 && (
+                                <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                                    <Hash className="w-3 h-3" />
+                                    <span>{hashtags.length} hashtag{hashtags.length > 1 ? 's' : ''}</span>
+                                </div>
+                            )}
+                        </div>
+                        {hashtags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                {hashtags.map((tag, index) => (
+                                    <span
+                                        key={index}
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                    >
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Action Buttons */}

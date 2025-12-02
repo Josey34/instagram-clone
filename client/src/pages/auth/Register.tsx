@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { register } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -58,7 +58,7 @@ const Register = () => {
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-3xl font-bold text-center">
-                        Instagram
+                        InstaClone
                     </CardTitle>
                     <CardDescription className="text-center">
                         Sign up to see photos and videos from your friends

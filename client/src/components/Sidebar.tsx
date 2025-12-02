@@ -3,8 +3,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { cn } from "@/lib/utils";
 import { logout } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreatePost from "./CreatePost";
 
 const Sidebar = () => {
@@ -127,7 +127,7 @@ const Sidebar = () => {
                 {/* Logo */}
                 <Link to="/" className="mb-8 px-3 py-2 overflow-hidden">
                     {isExpanded ? (
-                        <span className="text-2xl font-bold">Instagram</span>
+                        <span className="text-2xl font-bold">InstaClone</span>
                     ) : (
                         <span className="text-2xl">📷</span>
                     )}

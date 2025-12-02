@@ -113,7 +113,7 @@ const Profile = () => {
     return (
         <Layout>
             <div className="max-w-4xl mx-auto">
-                {/* Header Section - Instagram Style */}
+                {/* Header Section */}
                 <div className="mb-11">
                     <div className="flex gap-8 md:gap-28 items-start mb-11">
                         {/* Profile Picture */}

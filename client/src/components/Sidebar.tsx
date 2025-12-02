@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { cn } from "@/lib/utils";
 import { logout } from "@/store/slices/authSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreatePost from "./CreatePost";
@@ -92,8 +93,9 @@ const Sidebar = () => {
             ),
         },
         {
-            name: "Profile",
-            path: `/profile/${user?.username}`,
+            name: "Create",
+            path: null,
+            onClick: () => setCreatePostOpen(true),
             icon: (
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -106,9 +108,28 @@ const Sidebar = () => {
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
+                        d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                 </svg>
+            ),
+        },
+        {
+            name: "Profile",
+            path: `/profile/${user?.username}`,
+            icon: (
+                <Avatar className="w-6 h-6 min-w-6 rounded-full overflow-hidden">
+                    <AvatarImage
+                        src={
+                            user?.profilePicture ||
+                            "https://via.placeholder.com/150"
+                        }
+                        alt={user?.username}
+                        className="object-cover w-full h-full rounded-full"
+                    />
+                    <AvatarFallback className="rounded-full">
+                        {user?.username?.[0]?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                </Avatar>
             ),
         },
     ];
@@ -136,50 +157,39 @@ const Sidebar = () => {
                 {/* Navigation Items */}
                 <nav className="flex-1 space-y-2">
                     {navItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={cn(
-                                "flex items-center gap-4 px-3 py-3 rounded-lg transition-all",
-                                isActive(item.path)
-                                    ? "bg-secondary font-semibold"
-                                    : "hover:bg-secondary/50"
-                            )}
-                        >
-                            {item.icon}
-                            {isExpanded && (
-                                <span className="text-base whitespace-nowrap">
-                                    {item.name}
-                                </span>
-                            )}
-                        </Link>
+                        item.path ? (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={cn(
+                                    "flex items-center gap-4 px-3 py-3 rounded-lg transition-all",
+                                    isActive(item.path)
+                                        ? "bg-secondary font-semibold"
+                                        : "hover:bg-secondary/50"
+                                )}
+                            >
+                                {item.icon}
+                                {isExpanded && (
+                                    <span className="text-base whitespace-nowrap">
+                                        {item.name}
+                                    </span>
+                                )}
+                            </Link>
+                        ) : (
+                            <button
+                                key={item.name}
+                                onClick={item.onClick}
+                                className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-secondary/50 transition-all w-full text-left"
+                            >
+                                {item.icon}
+                                {isExpanded && (
+                                    <span className="text-base whitespace-nowrap">
+                                        {item.name}
+                                    </span>
+                                )}
+                            </button>
+                        )
                     ))}
-
-                    {/* Create Post Button */}
-                    <button
-                        onClick={() => setCreatePostOpen(true)}
-                        className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-secondary/50 transition-all w-full text-left"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-6 h-6 min-w-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M12 4.5v15m7.5-7.5h-15"
-                            />
-                        </svg>
-                        {isExpanded && (
-                            <span className="text-base whitespace-nowrap">
-                                Create
-                            </span>
-                        )}
-                    </button>
                 </nav>
 
                 {/* Logout Button */}
@@ -213,40 +223,29 @@ const Sidebar = () => {
             <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40">
                 <div className="flex justify-around items-center h-16 px-4">
                     {navItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={cn(
-                                "flex flex-col items-center justify-center p-2 rounded-lg transition-colors",
-                                isActive(item.path)
-                                    ? "text-primary"
-                                    : "text-muted-foreground"
-                            )}
-                        >
-                            {item.icon}
-                        </Link>
+                        item.path ? (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={cn(
+                                    "flex flex-col items-center justify-center p-2 rounded-lg transition-colors",
+                                    isActive(item.path)
+                                        ? "text-primary"
+                                        : "text-muted-foreground"
+                                )}
+                            >
+                                {item.icon}
+                            </Link>
+                        ) : (
+                            <button
+                                key={item.name}
+                                onClick={item.onClick}
+                                className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground"
+                            >
+                                {item.icon}
+                            </button>
+                        )
                     ))}
-
-                    {/* Create Post Button Mobile */}
-                    <button
-                        onClick={() => setCreatePostOpen(true)}
-                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-6 h-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M12 4.5v15m7.5-7.5h-15"
-                            />
-                        </svg>
-                    </button>
 
                     <button
                         onClick={handleLogout}
@@ -271,7 +270,10 @@ const Sidebar = () => {
             </div>
 
             {/* Create Post Dialog */}
-            <CreatePost open={createPostOpen} onOpenChange={setCreatePostOpen} />
+            <CreatePost
+                open={createPostOpen}
+                onOpenChange={setCreatePostOpen}
+            />
         </>
     );
 };

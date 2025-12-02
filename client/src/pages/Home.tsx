@@ -1,3 +1,4 @@
+import StoriesCarousel from "@/components/StoriesCarousel";
 import { useEffect } from "react";
 import Layout from "../components/Layout";
 import PostCard from "../components/PostCard";
@@ -16,7 +17,7 @@ const Home = () => {
     return (
         <Layout>
             <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">Feed</h1>
+                <StoriesCarousel />
 
                 {loading ? (
                     <FeedSkeleton count={3} />

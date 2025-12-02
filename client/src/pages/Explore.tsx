@@ -19,8 +19,6 @@ const Explore = () => {
     return (
         <Layout>
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-2xl font-bold mb-6">Explore</h1>
-
                 {loading ? (
                     <div className="grid grid-cols-3 gap-1 md:gap-4">
                         {[...Array(12)].map((_, i) => (

@@ -6,6 +6,7 @@ import type {
     LoginCredentials,
     RegisterCredentials,
 } from "../../types";
+import { toggleSavePost } from "./postSlice";
 
 const initialState: AuthState = {
     user: null,
@@ -166,6 +167,24 @@ const authSlice = createSlice({
         builder.addCase(updateProfile.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
+        });
+
+        // TOGGLE SAVE POST
+        builder.addCase(toggleSavePost.fulfilled, (state, action) => {
+            if (state.user) {
+                const postId = action.payload.postId;
+                const isSaved = action.payload.data.isSaved;
+
+                if (isSaved) {
+                    if (!state.user.savedPosts?.includes(postId)) {
+                        state.user.savedPosts = [...(state.user.savedPosts || []), postId];
+                    }
+                } else {
+                    state.user.savedPosts = (state.user.savedPosts || []).filter(
+                        (id) => id !== postId
+                    );
+                }
+            }
         });
     },
 });

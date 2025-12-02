@@ -150,7 +150,7 @@ const Sidebar = () => {
                     {isExpanded ? (
                         <span className="text-2xl font-bold">InstaClone</span>
                     ) : (
-                        <img src="../../public/favicon.svg" alt="InstaClone" />
+                        <img src="./favicon.svg" alt="InstaClone" />
                     )}
                 </Link>
 

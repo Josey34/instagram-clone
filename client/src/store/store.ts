@@ -6,6 +6,7 @@ import followReducer from './slices/followSlice';
 import notificationReducer from './slices/notificationSlice';
 import postReducer from './slices/postSlice';
 import searchReducer from './slices/searchSlice';
+import storyReducer from './slices/storySlice';
 import userReducer from './slices/userSlice';
 
 export const store = configureStore({
@@ -18,6 +19,7 @@ export const store = configureStore({
         search: searchReducer,
         explore: exploreReducer,
         follow: followReducer,
+        story: storyReducer,
     }
 });
 

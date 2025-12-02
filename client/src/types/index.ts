@@ -44,12 +44,25 @@ export interface Post {
     createdAt: string;
 }
 
+export interface CommentState {
+    comments: { [postId: string]: Comment[] };
+    loading: boolean;
+    error: string | null;
+}
+
 export interface Comment {
     _id: string;
     user: UserPreview;
     post: string;
     text: string;
     createdAt: string;
+}
+
+export interface StoryState {
+    stories: Story[];
+    userStories: Story[];
+    loading: boolean;
+    error: string | null;
 }
 
 export interface Story {

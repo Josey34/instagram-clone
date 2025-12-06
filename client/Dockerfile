@@ -16,12 +16,20 @@ FROM nginx:alpine AS production
 
 WORKDIR /usr/share/nginx/html
 
+RUN rm -rf ./*
+
 COPY --from=builder /app/dist .
 
 # SECURITY - REMOVE ROOT USER
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
 
+# ENVIRONMENT INJECTION
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 80
 
+# Use custom entrypoint that injects env vars
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD ["nginx", "-g", "daemon off;"]

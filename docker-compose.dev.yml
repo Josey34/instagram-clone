@@ -1,0 +1,53 @@
+version: "3.8"
+
+networks:
+  instagram-dev-network:
+    driver: bridge
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: instagram-server-dev
+    ports:
+      - "5000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MONGODB_URI: ${MONGODB_URI}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_APP_PASSWORD: ${EMAIL_APP_PASSWORD}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+    volumes:
+      # Mount source code for hot reload
+      - ./server:/app
+      # Don't mount node_modules (use container's version)
+      - /app/node_modules
+    networks:
+      - instagram-dev-network
+    command: npm run dev
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: instagram-client-dev
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
+    volumes:
+      # Mount source code for hot reload
+      - ./client:/app
+      # Don't mount node_modules (use container's version)
+      - /app/node_modules
+    depends_on:
+      - server
+    networks:
+      - instagram-dev-network
+    command: npm run dev -- --host 0.0.0.0

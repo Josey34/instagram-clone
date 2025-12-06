@@ -1,0 +1,19 @@
+# Development Dockerfile for Node.js + Express
+FROM node:20-alpine
+
+# Install development tools
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies (including devDependencies like nodemon)
+RUN npm install
+
+# Expose server port
+EXPOSE 3000
+
+# Start development server with nodemon for hot reload
+CMD ["npm", "run", "dev"]

@@ -15,6 +15,7 @@ import { connectDB } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import commentRoutes from './routes/comment.js';
+import healthRoutes from './routes/health.js';
 import postRoutes from './routes/post.js';
 import storyRoute from './routes/story.js';
 import uploadRoutes from './routes/upload.js';
@@ -34,9 +35,7 @@ app.use(morgan('dev'));
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
+app.use('/api/health', healthRoutes)
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

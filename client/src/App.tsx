@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { SidebarProvider } from "./contexts/SidebarContext";
@@ -15,6 +15,24 @@ import Explore from "./pages/Explore";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
+
+// Test function with SonarQube issues
+function testFEFunction() {
+    var apiKey = "sk-1234567890"; // Hardcoded secret - security issue
+    var unusedVar1 = "unused"; // unused variable
+    var unusedVar2 = "unused"; // unused variable
+
+    if (apiKey == "sk-1234567890") { // == instead of === - code smell
+        console.log("API Key is exposed");
+    }
+
+    // Duplicate logic - code smell
+    if (apiKey == "sk-1234567890") {
+        console.log("API Key is exposed");
+    }
+
+    return apiKey;
+}
 
 function App() {
     const dispatch = useAppDispatch();
